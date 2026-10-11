@@ -1,0 +1,17 @@
+@{
+    var success = TempData["Success"] as string;
+    var error = TempData["Error"] as string;
+}
+@if (success is not null || error is not null)
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3" aria-live="polite" aria-atomic="true">
+        <div class="toast portal-toast @(error is null ? "toast-success" : "toast-error")" role="status" data-bs-delay="6000">
+            <div class="toast-header">
+                <span class="toast-status-dot" aria-hidden="true"></span>
+                <strong class="me-auto">@(error is null ? "Listo" : "No fue posible")</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+            </div>
+            <div class="toast-body">@(success ?? error)</div>
+        </div>
+    </div>
+}

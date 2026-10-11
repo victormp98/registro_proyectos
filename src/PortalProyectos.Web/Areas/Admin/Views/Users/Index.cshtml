@@ -1,0 +1,51 @@
+@model IReadOnlyList<PortalProyectos.Application.Users.AccountReviewItem>
+@{
+    ViewData["Title"] = "Usuarios";
+    var selectedStatus = ViewBag.Status as AccountStatus?;
+    string Badge(AccountStatus status) => status switch { AccountStatus.Approved => "badge-approved", AccountStatus.Pending => "badge-pending", AccountStatus.Rejected => "badge-rejected", AccountStatus.Blocked => "badge-blocked", _ => "badge-deactivated" };
+    string StatusLabel(AccountStatus status) => status switch { AccountStatus.Approved => "Aprobada", AccountStatus.Pending => "Pendiente", AccountStatus.Rejected => "Rechazada", AccountStatus.Blocked => "Bloqueada", _ => "Eliminada" };
+}
+<div class="page-head"><div><span class="eyebrow">Control de acceso</span><h1>Usuarios</h1><p>Revisa la identidad académica y administra el estado de las cuentas de alumnos.</p></div><span class="status-badge badge-pending">@Model.Count resultado(s)</span></div>
+@if (TempData["OneTimeCredential"] is string credential) { <section class="alert alert-warning" role="status"><strong>Entrega segura ahora:</strong> @credential<br /><small>No se almacena esta contraseña en texto plano. Compártela por un canal seguro y pide cambiarla al iniciar sesión.</small></section> }
+<form method="get" class="filter-bar">
+    <div class="search-field"><svg class="icon"><use href="/assets/icons.svg#icon-search"></use></svg><input name="search" value="@ViewBag.Search" class="form-control" placeholder="Nombre, matrícula o correo" aria-label="Buscar usuarios" /></div>
+    <select name="status" class="form-select" style="max-width:220px" aria-label="Filtrar por estado"><option value="">Todos los estados</option>@foreach (var state in new[] { AccountStatus.Pending, AccountStatus.Approved, AccountStatus.Blocked, AccountStatus.Deactivated }) { <option value="@state" selected="@(selectedStatus == state)">@StatusLabel(state)</option> }</select>
+    <button class="btn btn-outline-primary" type="submit">Filtrar</button><a class="btn btn-ghost" asp-action="Index">Limpiar</a>
+</form>
+<section class="panel-card p-0 overflow-hidden">
+@if (Model.Count == 0) {
+    <div class="empty-state border-0 shadow-none"><span class="empty-illustration"><svg class="icon"><use href="/assets/icons.svg#icon-users"></use></svg></span><h2>No hay cuentas con estos filtros</h2><p>Prueba otra búsqueda o limpia los filtros para ver todos los alumnos.</p></div>
+} else {
+    <div class="table-responsive"><table class="table data-table"><thead><tr><th>Alumno</th><th>Datos académicos</th><th>Registro</th><th>Estado</th><th class="text-end">Acciones</th></tr></thead><tbody>
+    @foreach (var user in Model) {
+        <tr><td><div class="table-person"><strong>@user.FullName</strong><span>@(user.Status == AccountStatus.Deactivated ? "Identificadores liberados · registro histórico" : $"{user.EnrollmentNumber} · {user.Email}")</span></div></td><td><div class="table-person"><strong>@user.Career</strong><span>@user.Grade · Grupo @user.Group</span></div></td><td class="text-secondary small">@user.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td><td><span class="status-badge @Badge(user.Status)">@StatusLabel(user.Status)</span>@if (!string.IsNullOrWhiteSpace(user.StatusReason)) { <div class="small text-secondary mt-1" title="@user.StatusReason">Con observación</div> }</td>
+        <td><div class="table-actions">
+            @if (user.Status == AccountStatus.Pending)
+            {
+                <form asp-action="Approve" method="post"><input type="hidden" name="id" value="@user.Id" /><button class="btn btn-sm btn-success" type="submit">Aprobar</button></form>
+                <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#reasonModal" data-reason-modal data-form-target="#reasonActionForm" data-action-url="@Url.Action("Reject", "Users", new { area = "Admin" })" data-user-id="@user.Id" data-title="Rechazar solicitud" data-description="¿Confirmas que deseas rechazar esta solicitud? La solicitud será eliminada y el alumno podrá registrarse nuevamente.">Rechazar</button>
+            }
+            else if (user.Status == AccountStatus.Approved)
+            {
+                <form asp-action="ResetPassword" method="post" data-confirm="¿Restablecer la contraseña de @user.FullName? Se generará una contraseña temporal nueva y deberá cambiarla al iniciar sesión."><input type="hidden" name="id" value="@user.Id" /><button class="btn btn-sm btn-outline-primary" type="submit">Restablecer contraseña</button></form>
+                <form asp-action="Block" method="post" data-confirm="¿Confirmas que deseas bloquear esta cuenta?"><input type="hidden" name="id" value="@user.Id" /><button class="btn btn-sm btn-outline-warning" type="submit">Bloquear</button></form>
+            }
+            else if (user.Status == AccountStatus.Blocked)
+            {
+                <form asp-action="Unblock" method="post" data-confirm="¿Confirmas que deseas desbloquear esta cuenta?"><input type="hidden" name="id" value="@user.Id" /><button class="btn btn-sm btn-outline-primary" type="submit">Desbloquear</button></form>
+            }
+            @if (user.Status is AccountStatus.Approved or AccountStatus.Blocked)
+            {
+                <form asp-action="Delete" method="post" data-confirm="¿Confirmas que deseas eliminar esta cuenta? La cuenta dejará de tener acceso y no podrá reactivarse. Para volver al sistema deberá crearse una cuenta nueva."><input type="hidden" name="id" value="@user.Id" /><button class="btn btn-sm btn-outline-danger" type="submit">Eliminar</button></form>
+            }
+
+        </div></td></tr>
+    }
+    </tbody></table></div>
+}
+</section>
+<div class="modal fade" id="reasonModal" tabindex="-1" aria-labelledby="reasonModalTitle" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0 rounded-4"><form id="reasonActionForm" method="post">@Html.AntiForgeryToken()<input type="hidden" name="id" />
+    <div class="modal-header"><div><h2 class="modal-title fs-5 fw-bold" id="reasonModalTitle">Cambiar estado</h2><p class="small text-secondary mb-0" id="reasonModalDescription"></p></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+    <div class="modal-body"><label for="reason" class="form-label">Motivo u observación (opcional)</label><textarea id="reason" name="reason" class="form-control" rows="4" maxlength="500"></textarea></div>
+    <div class="modal-footer"><button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-primary">Confirmar acción</button></div>
+</form></div></div></div>

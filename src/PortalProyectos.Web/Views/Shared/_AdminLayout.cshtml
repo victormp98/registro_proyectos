@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#102D50" />
+    <title>@ViewData["Title"] · Administración</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/portal.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/identity.css" asp-append-version="true" />
+</head>
+<body class="dashboard-shell admin-shell">
+    <a class="skip-link" href="#dashboard-content">Saltar al contenido</a>
+    <aside class="dashboard-sidebar" id="dashboardSidebar" aria-label="Panel administrativo">
+        <div class="sidebar-head">
+            <a class="portal-brand portal-brand-light" asp-area="" asp-controller="Home" asp-action="Index">
+                <span class="brand-mark"><svg class="icon"><use href="/assets/icons.svg#icon-logo"></use></svg></span>
+                <span class="brand-full">Portal de <strong>Proyectos</strong></span>
+            </a>
+            <button class="sidebar-close d-lg-none" type="button" data-sidebar-close aria-label="Cerrar menú">×</button>
+        </div>
+        <nav class="sidebar-nav">
+            <span class="sidebar-label">Administración</span>
+            <a class="sidebar-link" asp-area="Admin" asp-controller="Dashboard" asp-action="Index"><svg class="icon"><use href="/assets/icons.svg#icon-dashboard"></use></svg><span>Dashboard</span></a>
+            <a class="sidebar-link" asp-area="Admin" asp-controller="Users" asp-action="Index"><svg class="icon"><use href="/assets/icons.svg#icon-users"></use></svg><span>Usuarios</span></a>
+            <a class="sidebar-link" asp-area="Admin" asp-controller="Projects" asp-action="Index"><svg class="icon"><use href="/assets/icons.svg#icon-folder"></use></svg><span>Proyectos</span></a>
+            <a class="sidebar-link" href="/Admin/Reviews"><svg class="icon"><use href="/assets/icons.svg#icon-check"></use></svg><span>Revisiones</span></a>
+            <a class="sidebar-link" href="/Notifications"><svg class="icon"><use href="/assets/icons.svg#icon-bell"></use></svg><span>Notificaciones</span></a>
+            <a class="sidebar-link" href="/Admin/Publications"><svg class="icon"><use href="/assets/icons.svg#icon-eye"></use></svg><span>Publicaciones</span></a>
+            <a class="sidebar-link" href="/Admin/News"><svg class="icon"><use href="/assets/icons.svg#icon-book"></use></svg><span>Noticias</span></a>
+            @if (User.IsInRole(SystemRoles.SuperAdministrator))
+            {
+                <span class="sidebar-label mt-3">Configuración</span>
+                <a class="sidebar-link" asp-area="Admin" asp-controller="Careers" asp-action="Index"><svg class="icon"><use href="/assets/icons.svg#icon-briefcase"></use></svg><span>Carreras</span></a>
+                <a class="sidebar-link" asp-area="Admin" asp-controller="ProjectCatalogs" asp-action="Index"><svg class="icon"><use href="/assets/icons.svg#icon-settings"></use></svg><span>Catálogos</span></a>
+                <a class="sidebar-link" href="/Admin/Administrators"><svg class="icon"><use href="/assets/icons.svg#icon-users"></use></svg><span>Administradores</span></a>
+                <a class="sidebar-link" href="/Admin/Storage"><svg class="icon"><use href="/assets/icons.svg#icon-folder"></use></svg><span>Almacenamiento</span></a>
+            }
+            <a class="sidebar-link" href="/Admin/AuditLog"><svg class="icon"><use href="/assets/icons.svg#icon-clock"></use></svg><span>Bitácora</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <a class="sidebar-link" asp-area="" asp-controller="Home" asp-action="Index"><svg class="icon"><use href="/assets/icons.svg#icon-eye"></use></svg><span>Ver portal</span></a>
+            <form asp-area="" asp-controller="Account" asp-action="Logout" method="post"><button class="sidebar-link sidebar-button" type="submit"><svg class="icon"><use href="/assets/icons.svg#icon-logout"></use></svg><span>Cerrar sesión</span></button></form>
+        </div>
+    </aside>
+    <div class="sidebar-scrim" data-sidebar-close></div>
+    <div class="dashboard-main">
+        <header class="dashboard-topbar">
+            <button class="topbar-menu" type="button" data-sidebar-open aria-label="Abrir menú"><svg class="icon"><use href="/assets/icons.svg#icon-menu"></use></svg></button>
+            <div><span class="eyebrow">Control institucional</span><strong>Panel administrativo</strong></div>
+            @await Html.PartialAsync("_NotificationCenter")
+            <div class="user-chip"><span class="avatar avatar-admin">@(User.Identity?.Name?.FirstOrDefault().ToString().ToUpperInvariant() ?? "A")</span><span class="d-none d-sm-block">@User.Identity?.Name</span></div>
+        </header>
+        <main id="dashboard-content" class="dashboard-content" role="main">@RenderBody()</main>
+    </div>
+    <partial name="_FlashMessages" />
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/signalr/signalr.min.js" asp-append-version="true"></script>
+    <script src="~/js/portal.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

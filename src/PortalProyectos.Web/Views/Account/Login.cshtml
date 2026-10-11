@@ -1,0 +1,17 @@
+@model PortalProyectos.Web.Models.Account.LoginViewModel
+@{ ViewData["Title"] = "Iniciar sesión"; }
+<section class="auth-page"><div class="container-xl"><div class="auth-wrap">
+    <aside class="auth-aside"><span class="hero-kicker">Bienvenido de vuelta</span><h1>Continúa donde dejaste tus ideas.</h1><p>Accede con tu matrícula o correo y sigue construyendo tu próximo proyecto.</p><ul class="auth-list"><li><svg class="icon"><use href="/assets/icons.svg#icon-shield"></use></svg>Tu cuenta, tu espacio de trabajo</li><li><svg class="icon"><use href="/assets/icons.svg#icon-check"></use></svg>Consulta el avance y las novedades de tus proyectos</li></ul></aside>
+    <div class="auth-form"><span class="eyebrow">Acceso al sistema</span><h2>Iniciar sesión</h2><p class="form-intro">Usa los datos con los que creaste tu perfil.</p>
+        <form asp-action="Login" method="post">
+            <input asp-for="ReturnUrl" type="hidden" />
+            <div asp-validation-summary="ModelOnly"></div>
+            <div class="mb-3"><label asp-for="Identifier" class="form-label"></label><input asp-for="Identifier" class="form-control" autocomplete="username" autofocus /><span asp-validation-for="Identifier"></span></div>
+            <div class="mb-3"><label asp-for="Password" class="form-label"></label><div class="password-input-group"><input asp-for="Password" class="form-control" autocomplete="current-password" /><button class="password-toggle" type="button" data-password-toggle aria-controls="Password" aria-label="Mostrar contraseña" aria-pressed="false" title="Mostrar contraseña"><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#icon-eye"></use></svg></button></div><span asp-validation-for="Password"></span></div>
+            <div class="form-check mb-4"><input asp-for="RememberMe" class="form-check-input" /><label asp-for="RememberMe" class="form-check-label"></label></div>
+            <button class="btn btn-primary w-100" type="submit">Entrar a mi panel</button>
+        </form>
+        <p class="text-center text-secondary mt-4 mb-0">¿Todavía no tienes perfil? <a asp-action="Register" class="fw-bold">Crear cuenta</a></p>
+    </div>
+</div></div></section>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

@@ -1,0 +1,55 @@
+@model PortalProyectos.Web.Models.Student.StudentDashboardViewModel
+@{
+    ViewData["Title"] = "Mi panel";
+    var statusClass = Model.Profile.Status switch {
+        AccountStatus.Approved => "status-approved", AccountStatus.Pending => "status-pending",
+        AccountStatus.Rejected => "status-rejected", AccountStatus.Blocked => "status-blocked", _ => "status-deactivated"
+    };
+    var statusLabel = Model.Profile.Status switch {
+        AccountStatus.Approved => "Cuenta aprobada", AccountStatus.Pending => "Cuenta pendiente",
+        AccountStatus.Rejected => "Cuenta rechazada", AccountStatus.Blocked => "Cuenta bloqueada", _ => "Cuenta desactivada"
+    };
+    string ProjectStatusLabel(ProjectAdministrativeStatus status) => status switch {
+        ProjectAdministrativeStatus.Draft => "Borrador", ProjectAdministrativeStatus.Submitted => "Enviado",
+        ProjectAdministrativeStatus.UnderReview => "En revisión", ProjectAdministrativeStatus.ChangesRequested => "Correcciones",
+        ProjectAdministrativeStatus.Resubmitted => "Reenviado", ProjectAdministrativeStatus.Approved => "Aprobado",
+        ProjectAdministrativeStatus.Rejected => "Rechazado", _ => status.ToString()
+    };
+}
+<div class="page-head">
+    <div><span class="eyebrow">Resumen personal</span><h1>Hola, @Model.Profile.FullName.Split(' ')[0]</h1><p>Consulta tu estado y da seguimiento a tus proyectos.</p></div>
+    @if (Model.Profile.Status == AccountStatus.Approved)
+    {
+        <div class="d-flex flex-wrap gap-2 align-items-center"><span class="status-badge @statusClass">@statusLabel</span><form asp-area="Student" asp-controller="Projects" asp-action="Create" method="post"><button class="btn btn-primary btn-icon" type="submit"><svg class="icon"><use href="/assets/icons.svg#icon-plus"></use></svg>Nuevo proyecto</button></form></div>
+    }
+    else
+    {
+        <a class="btn btn-outline-primary btn-icon" asp-area="Student" asp-controller="Profile" asp-action="Index"><svg class="icon"><use href="/assets/icons.svg#icon-user"></use></svg>Editar perfil</a>
+    }
+</div>
+@if (Model.Profile.Status != AccountStatus.Approved)
+{
+    <div class="status-banner @statusClass"><svg class="icon"><use href="/assets/icons.svg#icon-clock"></use></svg><div><strong>@statusLabel</strong><p>@(Model.Profile.Status == AccountStatus.Pending ? "Administración debe validar tus datos antes de habilitar el registro de proyectos." : Model.Profile.StatusReason ?? "Consulta con administración para conocer los siguientes pasos.")</p></div></div>
+}
+<div class="stats-grid">
+    <article class="stat-card"><span class="stat-icon"><svg class="icon"><use href="/assets/icons.svg#icon-folder"></use></svg></span><strong class="stat-value">@Model.Projects.TotalProjects</strong><span class="stat-label">Mis proyectos</span></article>
+    <article class="stat-card"><span class="stat-icon"><svg class="icon"><use href="/assets/icons.svg#icon-edit"></use></svg></span><strong class="stat-value">@Model.Projects.Drafts</strong><span class="stat-label">Borradores</span></article>
+    <article class="stat-card"><span class="stat-icon"><svg class="icon"><use href="/assets/icons.svg#icon-eye"></use></svg></span><strong class="stat-value">@Model.Projects.UnderReview</strong><span class="stat-label">En revisión</span></article>
+    <article class="stat-card"><span class="stat-icon"><svg class="icon"><use href="/assets/icons.svg#icon-clock"></use></svg></span><strong class="stat-value">@Model.Projects.ChangesRequested</strong><span class="stat-label">Correcciones</span></article>
+    <article class="stat-card"><span class="stat-icon"><svg class="icon"><use href="/assets/icons.svg#icon-check"></use></svg></span><strong class="stat-value">@Model.Projects.Approved</strong><span class="stat-label">Aprobados</span></article>
+    <article class="stat-card"><span class="stat-icon"><svg class="icon"><use href="/assets/icons.svg#icon-globe"></use></svg></span><strong class="stat-value">@Model.Projects.Published</strong><span class="stat-label">Publicados</span></article>
+    <a class="stat-card text-decoration-none" href="/Notifications"><span class="stat-icon"><svg class="icon"><use href="/assets/icons.svg#icon-bell"></use></svg></span><strong class="stat-value">@Model.Projects.UnreadNotifications</strong><span class="stat-label">Notificaciones pendientes</span></a>
+</div>
+<div class="row g-3">
+    <div class="col-lg-8"><section class="panel-card h-100"><div class="panel-card-head"><h2>Proyectos recientes</h2><a asp-area="Student" asp-controller="Projects" asp-action="Index">Ver todos</a></div>
+        @if (Model.RecentProjects.Count == 0)
+        {
+            <div class="empty-state border-0 shadow-none py-5"><span class="empty-illustration"><svg class="icon"><use href="/assets/icons.svg#icon-folder"></use></svg></span><h2>Aún no tienes proyectos</h2><p>Cuando tu cuenta esté aprobada podrás iniciar un borrador.</p></div>
+        }
+        else
+        {
+            <div class="project-mini-list">@foreach (var project in Model.RecentProjects) { <a asp-area="Student" asp-controller="Projects" asp-action="Details" asp-route-id="@project.Id" class="project-mini-item"><span class="project-monogram">@project.Name[0]</span><span><strong>@project.Name</strong><small>@project.Subject · v@project.VersionNumber</small></span><span class="status-badge project-status status-@project.Status.ToString().ToLowerInvariant()">@ProjectStatusLabel(project.Status)</span></a> }</div>
+        }
+    </section></div>
+    <div class="col-lg-4"><section class="panel-card h-100"><div class="panel-card-head"><h2>Tu información</h2></div><dl class="row mt-4 mb-0"><dt class="col-5 text-secondary fw-normal">Matrícula</dt><dd class="col-7 fw-bold">@Model.Profile.EnrollmentNumber</dd><dt class="col-5 text-secondary fw-normal">Carrera</dt><dd class="col-7 fw-bold">@Model.Profile.Career</dd><dt class="col-5 text-secondary fw-normal">Grado y grupo</dt><dd class="col-7 fw-bold">@Model.Profile.Grade @Model.Profile.Group</dd><dt class="col-5 text-secondary fw-normal">Registro</dt><dd class="col-7 fw-bold">@Model.Profile.CreatedAtUtc.ToLocalTime().ToString("dd MMM yyyy")</dd></dl></section></div>
+</div>

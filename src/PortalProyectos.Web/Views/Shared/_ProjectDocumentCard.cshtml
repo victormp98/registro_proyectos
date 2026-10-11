@@ -1,0 +1,24 @@
+@model PortalProyectos.Web.Models.Student.ProjectDocumentCardViewModel
+@using PortalProyectos.Application.Notifications
+<section class="panel-card project-document-card">
+    <div class="panel-card-head"><div><h2>Documentación del proyecto</h2><p class="text-secondary mb-0">PDF opcional · máximo 10 MB · privado</p>@if (Model.ApprovedPostReview) { <small class="text-secondary">Actualizar este documento no modifica el contenido académico aprobado.</small> }</div><span class="document-type-badge">PDF</span></div>
+    @if (Model.Document is null)
+    {
+        <div class="document-empty"><svg class="icon"><use href="/assets/icons.svg#icon-book"></use></svg><span>Aún no se adjunta documentación.</span></div>
+    }
+    else
+    {
+        <div class="document-file"><span class="document-file-icon"><svg class="icon"><use href="/assets/icons.svg#icon-book"></use></svg></span><div><strong>@Model.Document.OriginalFileName</strong><small>@(Model.Document.SizeBytes / 1024d / 1024d).ToString("0.0") MB · agregado @Model.Document.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy")</small></div><a class="btn btn-sm btn-outline-primary" href="/Student/Projects/Document/@Model.ProjectId">Ver PDF</a></div>
+    }
+    @if (Model.Editable)
+    {
+        <div class="document-actions">
+            <form asp-area="Student" asp-controller="Projects" asp-action="UploadDocument" asp-route-id="@Model.ProjectId" method="post" enctype="multipart/form-data" data-document-form data-document-replace="@(Model.Document is not null)">
+                <label class="form-label" for="projectPdf">@(Model.Document is null ? "Seleccionar PDF" : "Reemplazar PDF")</label>
+                <div class="input-group"><input id="projectPdf" class="form-control" type="file" name="file" accept="application/pdf,.pdf" required data-document-input /><button class="btn btn-primary" type="submit" data-submit-once>Guardar PDF</button></div>
+                <small class="text-secondary" data-document-filename>@(Model.ApprovedPostReview ? "La documentación se puede actualizar sin reabrir la revisión académica. PDF menor de 10 MB." : "Selecciona un archivo PDF menor de 10 MB.")</small>
+            </form>
+            @if (Model.Document is not null && !Model.ApprovedPostReview) { <form asp-area="Student" asp-controller="Projects" asp-action="DeleteDocument" asp-route-id="@Model.ProjectId" method="post" data-confirm="¿Eliminar el PDF de esta versión? El historial de otras versiones se conserva."><button class="btn btn-ghost text-danger" type="submit">Eliminar PDF</button></form> }
+        </div>
+    }
+</section>

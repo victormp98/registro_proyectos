@@ -1,0 +1,58 @@
+@model PortalProyectos.Application.Users.AdminDashboardSummary
+@{
+    ViewData["Title"] = "Dashboard";
+    string ProjectStatusLabel(string status) => status switch { "Draft" => "Borrador", "Submitted" => "Enviado", "UnderReview" => "En revisión", "ChangesRequested" => "Correcciones", "Resubmitted" => "Reenviado", "Approved" => "Aprobado", "Rejected" => "Rechazado", _ => status };
+    int BarWidth(int value, int maximum) => maximum == 0 ? 0 : Math.Clamp(value * 100 / maximum, 4, 100);
+    var careerMax = Model.ProjectsByCareer.Select(x => x.Count).DefaultIfEmpty(0).Max();
+    var subjectMax = Model.ProjectsBySubject.Select(x => x.Count).DefaultIfEmpty(0).Max();
+    var cycleMax = Model.ProjectsByCycle.Select(x => x.Count).DefaultIfEmpty(0).Max();
+    var statusMax = Model.ProjectsByStatus.Select(x => x.Count).DefaultIfEmpty(0).Max();
+}
+<div class="page-head admin-dashboard-head"><div><span class="eyebrow">Vista general · datos actuales</span><h1>Panel administrativo</h1><p>Un resumen operativo para priorizar cuentas, revisiones y publicaciones.</p></div><a class="btn btn-primary btn-icon" href="/Admin/Reviews"><svg class="icon"><use href="/assets/icons.svg#icon-check"></use></svg>Revisar proyectos <span class="dashboard-action-count">@Model.ProjectsWaiting</span></a></div>
+
+<section aria-labelledby="dashboard-priority-title">
+    <div class="dashboard-section-heading"><div><span class="eyebrow">Prioridades</span><h2 id="dashboard-priority-title">Actividad principal</h2></div><span class="dashboard-live-label"><i aria-hidden="true"></i> Métricas actuales</span></div>
+    <div class="stats-grid stats-grid-admin admin-primary-metrics">
+        <article class="stat-card metric-primary metric-students"><span class="stat-icon"><svg class="icon"><use href="/assets/icons.svg#icon-users"></use></svg></span><strong class="stat-value">@Model.TotalStudents</strong><span class="stat-label">Total de alumnos</span><small>@Model.ApprovedStudents aprobados</small></article>
+        <article class="stat-card metric-primary metric-pending"><span class="stat-icon"><svg class="icon"><use href="/assets/icons.svg#icon-clock"></use></svg></span><strong class="stat-value">@Model.PendingUsers</strong><span class="stat-label">Cuentas pendientes</span><small>Por validar</small></article>
+        <article class="stat-card metric-primary metric-waiting"><span class="stat-icon"><svg class="icon"><use href="/assets/icons.svg#icon-folder"></use></svg></span><strong class="stat-value">@Model.ProjectsWaiting</strong><span class="stat-label">Proyectos por tomar</span><small>Enviados o reenviados</small></article>
+        <article class="stat-card metric-primary metric-review"><span class="stat-icon"><svg class="icon"><use href="/assets/icons.svg#icon-eye"></use></svg></span><strong class="stat-value">@Model.ProjectsUnderReview</strong><span class="stat-label">En revisión</span><small>Asignados a administración</small></article>
+        <article class="stat-card metric-primary metric-approved"><span class="stat-icon"><svg class="icon"><use href="/assets/icons.svg#icon-check"></use></svg></span><strong class="stat-value">@Model.ApprovedProjects</strong><span class="stat-label">Proyectos aprobados</span><small>Disponibles para publicación</small></article>
+        <article class="stat-card metric-primary metric-published"><span class="stat-icon"><svg class="icon"><use href="/assets/icons.svg#icon-book"></use></svg></span><strong class="stat-value">@Model.PublishedProjects</strong><span class="stat-label">Publicados</span><small>Visibles en el portal</small></article>
+    </div>
+</section>
+
+<section class="dashboard-secondary-metrics" aria-label="Otros indicadores actuales">
+    <article class="metric-chip"><span>Cuentas aprobadas</span><strong>@Model.ApprovedStudents</strong></article>
+    <article class="metric-chip"><span>Cuentas rechazadas</span><strong>@Model.RejectedUsers</strong></article>
+    <article class="metric-chip"><span>Cuentas bloqueadas</span><strong>@Model.BlockedUsers</strong></article>
+    <article class="metric-chip"><span>Carreras activas</span><strong>@Model.ActiveCareers</strong></article>
+    <article class="metric-chip"><span>Con correcciones</span><strong>@Model.ProjectsWithCorrections</strong></article>
+    <article class="metric-chip"><span>Proyectos terminados</span><strong>@Model.CompletedProjects</strong></article>
+    <article class="metric-chip"><span>Publicaciones ocultas</span><strong>@Model.HiddenProjects</strong></article>
+    <article class="metric-chip"><span>Proyectos destacados</span><strong>@Model.FeaturedProjects</strong></article>
+    <article class="metric-chip"><span>Total de likes</span><strong>@Model.ProjectLikes</strong></article>
+    <article class="metric-chip"><span>Total de proyectos</span><strong>@Model.TotalProjects</strong></article>
+    <article class="metric-chip"><span>Noticias publicadas</span><strong>@Model.PublishedNews</strong></article>
+    <article class="metric-chip"><span>Participantes registrados</span><strong>@Model.TotalParticipants</strong></article>
+</section>
+
+<div class="dashboard-analytics-grid">
+    <section class="panel-card dashboard-analytics-card"><div class="panel-card-head"><div><span class="eyebrow">Distribución</span><h2>Proyectos por carrera</h2></div><a asp-area="Admin" asp-controller="Projects" asp-action="Index">Consultar</a></div><div class="dashboard-bars">
+        @foreach (var item in Model.ProjectsByCareer.Take(8)) { <div class="dashboard-bar-row"><div><span>@item.Label</span><strong>@item.Count</strong></div><div class="dashboard-bar-track"><span style="width:@(BarWidth(item.Count, careerMax))%"></span></div></div> }
+        @if (Model.ProjectsByCareer.Count == 0) { <div class="dashboard-empty-inline">Aún no hay proyectos asociados a carreras.</div> }
+    </div></section>
+    <section class="panel-card dashboard-analytics-card"><div class="panel-card-head"><div><span class="eyebrow">Proceso</span><h2>Proyectos por estado</h2></div><a href="/Admin/Projects">Ver listado</a></div><div class="dashboard-bars">
+        @foreach (var item in Model.ProjectsByStatus) { <div class="dashboard-bar-row"><div><span>@ProjectStatusLabel(item.Label)</span><strong>@item.Count</strong></div><div class="dashboard-bar-track"><span style="width:@(BarWidth(item.Count, statusMax))%"></span></div></div> }
+        @if (Model.ProjectsByStatus.Count == 0) { <div class="dashboard-empty-inline">Aún no hay proyectos registrados.</div> }
+    </div></section>
+    <section class="panel-card dashboard-analytics-card"><div class="panel-card-head"><div><span class="eyebrow">Académico</span><h2>Proyectos por materia</h2></div></div><div class="dashboard-bars">
+        @foreach (var item in Model.ProjectsBySubject.Take(7)) { <div class="dashboard-bar-row"><div><span>@item.Label</span><strong>@item.Count</strong></div><div class="dashboard-bar-track"><span style="width:@(BarWidth(item.Count, subjectMax))%"></span></div></div> }
+        @if (Model.ProjectsBySubject.Count == 0) { <div class="dashboard-empty-inline">Aún no hay materias con proyectos.</div> }
+    </div></section>
+    <section class="panel-card dashboard-analytics-card"><div class="panel-card-head"><div><span class="eyebrow">Periodo</span><h2>Proyectos por ciclo escolar</h2></div></div><div class="dashboard-bars">
+        @foreach (var item in Model.ProjectsByCycle.Take(7)) { <div class="dashboard-bar-row"><div><span>@item.Label</span><strong>@item.Count</strong></div><div class="dashboard-bar-track"><span style="width:@(BarWidth(item.Count, cycleMax))%"></span></div></div> }
+        @if (Model.ProjectsByCycle.Count == 0) { <div class="dashboard-empty-inline">Aún no hay ciclos con proyectos.</div> }
+    </div></section>
+    <section class="panel-card dashboard-quick-access"><div class="panel-card-head"><div><span class="eyebrow">Operación</span><h2>Accesos rápidos</h2></div></div><div class="dashboard-quick-grid"><a href="/Admin/Users?status=Pending"><svg class="icon"><use href="/assets/icons.svg#icon-users"></use></svg><span>Validar alumnos <strong>@Model.PendingUsers</strong></span></a><a href="/Admin/Reviews"><svg class="icon"><use href="/assets/icons.svg#icon-check"></use></svg><span>Tomar revisiones <strong>@Model.ProjectsWaiting</strong></span></a><a href="/Admin/Publications"><svg class="icon"><use href="/assets/icons.svg#icon-eye"></use></svg><span>Gestionar publicaciones</span></a><a href="/Admin/AuditLog"><svg class="icon"><use href="/assets/icons.svg#icon-clock"></use></svg><span>Consultar bitácora</span></a><a href="/Admin/Storage"><svg class="icon"><use href="/assets/icons.svg#icon-folder"></use></svg><span>Almacenamiento</span></a></div></section>
+</div>

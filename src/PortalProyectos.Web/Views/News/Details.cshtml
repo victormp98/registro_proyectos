@@ -1,0 +1,19 @@
+@using PortalProyectos.Application.News
+@using PortalProyectos.Domain.News
+@model NewsPostDetails
+@{ ViewData["Title"] = Model.Title; var isPreview = (bool?)ViewBag.AdminPreview == true; var cover = Model.Media.FirstOrDefault(x => x.IsCover && !x.IsVideo); string MediaUrl(NewsMediaItem item) => isPreview ? $"/Admin/News/{Model.Id}/media/{item.Id}" : $"/media/news/{item.Id}"; }
+<div class="container-xl news-detail-page">
+    @if (isPreview) { <div class="news-preview-banner"><strong>Vista previa administrativa</strong><span>Estado: @Model.Status · No es contenido público hasta publicar.</span><a href="/Admin/News/@Model.Id/edit">Volver a editar</a></div> }
+    <a class="back-link" href="/noticias">← Todas las noticias</a>
+    <article>
+        <header class="news-detail-header"><div class="news-detail-meta">@(Model.PublishedAtUtc?.ToLocalTime().ToString("dd MMMM yyyy") ?? "Vista previa") · @Model.Author @if (Model.IsFeatured) { <span class="news-featured-badge">Destacada</span> }</div><h1>@Model.Title</h1><p class="news-detail-summary">@Model.Summary</p></header>
+        @if (cover is not null) { <img class="news-detail-cover" src="@MediaUrl(cover)" alt="@(cover.AltText ?? Model.Title)" /> } else { <div class="news-detail-cover news-detail-cover-empty"><svg class="icon"><use href="/assets/icons.svg#icon-book"></use></svg><strong>@Model.Title[..1].ToUpperInvariant()</strong></div> }
+        <div class="news-detail-grid"><div class="news-detail-main">
+            <div class="news-content-text">@Model.Content</div>
+            @foreach (var video in Model.Media.Where(x => x.IsVideo)) { <section class="news-video-section"><span class="eyebrow">Video</span><video class="news-local-video" controls preload="metadata" playsinline src="@MediaUrl(video)">Tu navegador no admite video HTML5.</video><p class="small text-secondary">Video alojado localmente; disponible dentro de la red del portal.</p></section> }
+            @if (Model.ExternalVideoUrl is not null) { <section class="news-video-section"><span class="eyebrow">Video externo · @Model.ExternalVideoProvider</span><div class="news-external-video"><iframe src="@Model.ExternalVideoUrl" title="Video relacionado con @Model.Title" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div><p class="small text-secondary">Este video requiere conexión a Internet. La noticia y sus archivos locales seguirán disponibles sin conexión externa.</p></section> }
+            @{ var gallery = Model.Media.Where(x => !x.IsVideo && !x.IsCover).ToArray(); }
+            @if (gallery.Length > 0) { <section class="news-gallery-section"><span class="eyebrow">Galería</span><h2>Imágenes relacionadas</h2><div class="news-gallery-grid">@foreach (var image in gallery) { <img src="@MediaUrl(image)" alt="@(image.AltText ?? $"Imagen de {Model.Title}")" loading="lazy" /> }</div></section> }
+        </div><aside class="news-detail-aside"><section class="panel-card"><span class="eyebrow">Sobre esta noticia</span><h2>Portal de Proyectos</h2><p>Contenido editorial publicado por administración.</p></section>@if (Model.Links.Count > 0) { <section class="panel-card"><span class="eyebrow">Enlaces</span><h2>Más información</h2><div class="news-public-links">@foreach (var link in Model.Links) { <a href="@link.Url" target="_blank" rel="noopener noreferrer">@link.Label <span aria-hidden="true">↗</span></a> }</div></section> }</aside></div>
+    </article>
+</div>

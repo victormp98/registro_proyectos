@@ -1,0 +1,33 @@
+@using PortalProyectos.Domain.Projects
+@using PortalProyectos.Application.Projects
+@model PublicProjectDetails
+@{ ViewData["Title"] = Model.Project.Name; var p = Model.Project; var gallery = Model.Images.Where(x => !x.IsCover).ToArray(); }
+<div class="container-xl public-detail-page">
+    <a href="/proyectos" class="back-link">← Explorar proyectos</a>
+    <section class="public-detail-hero">
+        @if (p.CoverUrl is not null) { <img class="detail-cover-backdrop" src="@p.CoverUrl" alt="" aria-hidden="true" /><img class="detail-cover" src="@p.CoverUrl" alt="Portada: @p.Name" /> }
+        else { <div class="detail-cover detail-cover-empty" aria-hidden="true"><span>@p.Name[..1].ToUpperInvariant()</span><small>@p.Type</small></div> }
+        <div class="detail-hero-overlay"></div>
+        <div class="detail-title"><div class="public-project-tags"><span>@p.Career</span><span>@p.Subject</span><span>@p.Cycle</span></div><h1>@p.Name</h1><span class="development-chip">@(p.DevelopmentStatus == ProjectDevelopmentStatus.Completed ? "Terminado" : "En proceso")</span></div>
+    </section>
+    <div class="public-detail-layout"><main class="d-grid gap-4">
+        <section class="public-content-panel"><span class="eyebrow">El reto</span><h2>Planteamiento del problema</h2><p>@Model.ProblemStatement</p></section>
+        <section class="public-content-panel solution-panel"><span class="eyebrow">La propuesta</span><h2>Solución e innovación</h2><p>@Model.ProposedSolution</p></section>
+        @if (gallery.Length > 0) { <section class="public-content-panel"><span class="eyebrow">Galería</span><h2>Así toma forma</h2><div class="publication-gallery">@for (var i = 0; i < gallery.Length; i++) { var image = gallery[i]; var alt = image.AltText ?? $"Imagen del proyecto {p.Name}"; <button class="publication-gallery-trigger" type="button" data-project-gallery-image data-image-url="@image.Url" data-image-alt="@alt" aria-label="Ampliar imagen @(i + 1) de @gallery.Length"><img src="@image.Url" alt="@alt" loading="lazy" /></button> }</div></section> }
+    </main><aside class="d-grid gap-4 align-content-start">
+        <section class="public-content-panel project-facts"><span class="eyebrow">Ficha del proyecto</span><dl><div><dt>Carrera</dt><dd>@p.Career</dd></div><div><dt>Materia</dt><dd>@p.Subject</dd></div><div><dt>Tipo</dt><dd>@p.Type</dd></div><div><dt>Ciclo escolar</dt><dd>@p.Cycle</dd></div>@if (!string.IsNullOrWhiteSpace(Model.Advisor)) { <div><dt>Asesor</dt><dd>@Model.Advisor</dd></div> }</dl>
+            <div class="detail-like-row">@if ((bool?)ViewBag.CanLike == true) { <form method="post" action="/proyectos/@p.Id/like" data-like-form>@Html.AntiForgeryToken()<button class="like-button large @(p.IsLiked ? "is-liked" : "")" type="submit"><span aria-hidden="true">@(p.IsLiked ? "♥" : "♡")</span> <b data-like-count>@p.LikeCount</b> <small>me gusta</small></button></form> } else { <span class="like-count"><span aria-hidden="true">♡</span> @p.LikeCount <small>me gusta</small></span> }</div>
+        </section>
+        <section class="public-content-panel"><span class="eyebrow">Equipo</span><h2>Quienes lo hacen posible</h2><div class="public-participants">@foreach (var participant in Model.Participants) { <div class="public-person"><span class="avatar">@participant.Name[..1].ToUpperInvariant()</span><div><strong>@participant.Name</strong><small>@(participant.Career ?? "Participante")</small></div></div> }</div></section>
+    </aside></div>
+</div>
+@if (gallery.Length > 0)
+{
+    <div class="modal fade project-lightbox" id="projectGalleryLightbox" tabindex="-1" aria-labelledby="projectGalleryLightboxTitle" aria-hidden="true" data-project-lightbox>
+        <div class="modal-dialog modal-dialog-centered modal-xl"><div class="modal-content">
+            <div class="project-lightbox-header"><h2 class="project-lightbox-title" id="projectGalleryLightboxTitle">Galería · @p.Name</h2><span class="project-lightbox-position" data-lightbox-position aria-live="polite"></span><div class="project-lightbox-controls"><button class="project-lightbox-control" type="button" data-lightbox-previous aria-label="Imagen anterior">‹</button><button class="project-lightbox-control" type="button" data-lightbox-next aria-label="Imagen siguiente">›</button></div><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar imagen ampliada"></button></div>
+            <div class="modal-body"><img class="project-lightbox-image" data-lightbox-image alt="" /></div>
+        </div></div>
+    </div>
+}
+@section Scripts { <script src="~/js/public-projects.js" asp-append-version="true"></script> }

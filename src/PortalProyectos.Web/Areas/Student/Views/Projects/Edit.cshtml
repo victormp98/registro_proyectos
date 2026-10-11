@@ -1,0 +1,43 @@
+@model PortalProyectos.Web.Models.Student.ProjectEditorViewModel
+@{
+    ViewData["Title"] = Model.Status == ProjectAdministrativeStatus.ChangesRequested ? "Corregir proyecto" : "Editar proyecto";
+    var lastCorrection = Model.Reviews.FirstOrDefault(x => x.Decision == ProjectReviewDecision.ChangesRequested);
+}
+<div class="page-head"><div><span class="eyebrow">Versión @Model.VersionNumber</span><h1>@(Model.Status == ProjectAdministrativeStatus.ChangesRequested ? "Atender correcciones" : "Preparar borrador")</h1><p>Guarda avances incompletos o valida todo antes de enviarlo.</p></div><span class="status-badge project-status status-@Model.Status.ToString().ToLowerInvariant()">@(Model.Status == ProjectAdministrativeStatus.ChangesRequested ? "Correcciones" : "Borrador")</span></div>
+@if (lastCorrection is not null)
+{
+    <section class="correction-callout"><svg class="icon"><use href="/assets/icons.svg#icon-clock"></use></svg><div><strong>Observaciones de la revisión @lastCorrection.ReviewNumber</strong><p>@(lastCorrection.Notes ?? "Revisa los requisitos marcados.")</p>@if (lastCorrection.Requirements.Count > 0) { <ul>@foreach (var requirement in lastCorrection.Requirements) { <li>@requirement.Name</li> }</ul> }</div></section>
+}
+<form asp-action="Save" method="post" class="panel-card form-card project-editor" data-project-form>
+    <input asp-for="Id" type="hidden" /><div asp-validation-summary="ModelOnly"></div>
+    <section class="form-section"><div class="section-title"><span>01</span><div><h2>Identidad del proyecto</h2><p>Los catálogos se filtran con base en tu carrera.</p></div></div><div class="row g-3">
+        <div class="col-12"><label asp-for="Name" class="form-label"></label><input asp-for="Name" class="form-control" maxlength="120" data-submit-required data-minlength="5" /><div class="field-meta"><span asp-validation-for="Name"></span><span data-char-count>0 / 120</span></div></div>
+        <div class="col-md-4"><label asp-for="SubjectId" class="form-label"></label><select asp-for="SubjectId" asp-items="Model.Subjects" class="form-select" data-submit-required disabled="@(Model.Subjects.Count == 0)"><option value="">@(Model.Subjects.Count == 0 ? "No hay materias activas para tu carrera" : "Selecciona una materia")</option></select>@if (Model.Subjects.Count == 0) { <small class="form-text">Solicita a administración que asocie materias activas a tu carrera.</small> }</div>
+        <div class="col-md-4"><label asp-for="ProjectTypeId" class="form-label"></label><select asp-for="ProjectTypeId" asp-items="Model.ProjectTypes" class="form-select" data-submit-required><option value="">Selecciona un tipo</option></select></div>
+        <div class="col-md-4"><label asp-for="SchoolCycleId" class="form-label"></label><select asp-for="SchoolCycleId" asp-items="Model.SchoolCycles" class="form-select" data-submit-required><option value="">Selecciona un ciclo</option></select></div>
+        <div class="col-md-6"><label asp-for="EstimatedCompletionDate" class="form-label"></label><input asp-for="EstimatedCompletionDate" class="form-control" /></div>
+        <div class="col-12"><label asp-for="Advisor" class="form-label"></label><input asp-for="Advisor" class="form-control" maxlength="160" placeholder="Opcional" /></div>
+    </div></section>
+    <section class="form-section"><div class="section-title"><span>02</span><div><h2>Contenido académico</h2><p>Al enviar, cada apartado debe tener entre 100 y 3000 caracteres.</p></div></div><div class="row g-3">
+        <div class="col-12"><label asp-for="ProblemStatement" class="form-label"></label><textarea asp-for="ProblemStatement" class="form-control" rows="7" maxlength="3000" data-submit-required data-minlength="100"></textarea><div class="field-meta"><span asp-validation-for="ProblemStatement"></span><span data-char-count>0 / 3000</span></div></div>
+        <div class="col-12"><label asp-for="ProposedSolution" class="form-label"></label><textarea asp-for="ProposedSolution" class="form-control" rows="7" maxlength="3000" data-submit-required data-minlength="100"></textarea><div class="field-meta"><span asp-validation-for="ProposedSolution"></span><span data-char-count>0 / 3000</span></div></div>
+    </div></section>
+    <section class="form-section project-save-bar"><div><strong>Los borradores no llegan a administración.</strong><p class="mb-0 text-secondary">El envío bloqueará temporalmente la edición.</p></div><div class="d-flex flex-wrap gap-2"><button class="btn btn-outline-primary" type="submit" formaction="@Url.Action("Save")">Guardar borrador</button><button class="btn btn-primary" type="submit" formaction="@Url.Action("SaveAndSubmit")" data-submit-project> @(Model.Status == ProjectAdministrativeStatus.ChangesRequested ? "Reenviar" : "Enviar a revisión")</button></div></section>
+</form>
+@if (Model.HasSavedBasics)
+{
+    @await Html.PartialAsync("_ProjectDocumentCard", new PortalProyectos.Web.Models.Student.ProjectDocumentCardViewModel(Model.Id, Model.Document, true))
+}
+else
+{
+    <section class="panel-card project-secondary-locked" aria-disabled="true"><div class="panel-card-head"><div><h2>Documentación del proyecto</h2><p class="text-secondary mb-0">Guarda primero el proyecto como borrador para agregar documentación y participantes.</p></div><span class="status-badge badge-pending">Pendiente de guardar</span></div></section>
+}
+@if (Model.HasSavedBasics)
+{
+@await Html.PartialAsync("_ProjectParticipants", new PortalProyectos.Web.Models.Student.ProjectParticipantsViewModel(Model.Id, Model.Participants, Model.MaxParticipants))
+}
+else
+{
+    <section class="panel-card mt-4 project-secondary-locked" aria-disabled="true"><div class="panel-card-head"><div><h2>Participantes</h2><p class="text-secondary mb-0">Guarda primero el proyecto como borrador para agregar documentación y participantes.</p></div><button class="btn btn-outline-primary btn-sm" type="button" disabled>Agregar participante</button></div></section>
+}
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

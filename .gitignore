@@ -1,0 +1,39 @@
+# Build and local tooling
+**/bin/
+**/obj/
+.vs/
+.vscode/
+.idea/
+.dotnet-cli/
+.nuget-packages/
+/artifacts/
+__pycache__/
+node_modules/
+
+# Runtime data and secrets
+src/PortalProyectos.Web/App_Data/
+src/PortalProyectos.Web/storage/**
+!src/PortalProyectos.Web/storage/.gitkeep
+/storage/
+*.db
+*.db-shm
+*.db-wal
+appsettings.Local.json
+appsettings.*.Local.json
+.env
+.env.*
+!.env.example
+/imagenes-manual/
+*.pfx
+*.p12
+*.pem
+*.key
+
+# User-specific files
+*.user
+*.suo
+*.log
+*.tmp
+*.bak
+Thumbs.db
+Desktop.ini

@@ -1,0 +1,10 @@
+@using PortalProyectos.Domain.Projects
+@model PortalProyectos.Application.Projects.PublicProjectCard
+<article class="discovery-project">
+    <a class="discovery-project-image" href="/proyectos/@Model.Id" aria-label="Ver proyecto @Model.Name">
+        @if (Model.CoverUrl is not null) { <img class="discovery-project-backdrop" src="@Model.CoverUrl" alt="" aria-hidden="true" loading="lazy" /><img class="discovery-project-photo" src="@Model.CoverUrl" alt="Portada de @Model.Name" loading="lazy" /> }
+        else { <span class="discovery-project-fallback"><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#icon-lightbulb"></use></svg><span>@Model.Type</span></span> }
+        @if (Model.IsFeatured) { <span class="discovery-featured">Destacado</span> }
+    </a>
+    <div class="discovery-project-copy"><span class="discovery-project-career">@Model.Career</span><h3><a href="/proyectos/@Model.Id">@Model.Name</a></h3><p>@Model.Subject · @Model.Cycle</p><div class="discovery-project-chips"><span>@Model.Type</span><span>@(Model.DevelopmentStatus == ProjectDevelopmentStatus.Completed ? "Terminado" : "En proceso")</span></div><div class="discovery-project-bottom"><span aria-label="@Model.LikeCount me gusta">♡ @Model.LikeCount</span><a href="/proyectos/@Model.Id" aria-label="Ver proyecto @Model.Name">Ver proyecto ↗</a></div></div>
+</article>

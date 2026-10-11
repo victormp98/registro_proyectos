@@ -1,0 +1,17 @@
+@model PortalProyectos.Web.Models.Admin.AuditLogPage
+@{ ViewData["Title"] = "Bitácora"; }
+<div class="page-head"><div><span class="eyebrow">Trazabilidad de operaciones</span><h1>Bitácora</h1><p>Consulta de sólo lectura de cambios y acciones administrativas.</p></div><span class="status-badge badge-approved">@Model.TotalCount registros</span></div>
+<form method="get" class="panel-card audit-filters" aria-label="Filtros de bitácora">
+    <div class="audit-filter-row audit-filter-row-primary">
+        <div><label class="form-label" for="auditUser">Usuario</label><input id="auditUser" name="user" value="@Model.User" class="form-control" placeholder="Nombre" /></div>
+        <div><label class="form-label" for="auditAction">Acción</label><input id="auditAction" name="action" value="@Model.Action" class="form-control" placeholder="Ej. Proyecto.Aprobado" /></div>
+        <div><label class="form-label" for="auditEntity">Entidad / ID</label><input id="auditEntity" name="entity" value="@Model.Entity" class="form-control" placeholder="Proyecto, Usuario..." /></div>
+    </div>
+    <div class="audit-filter-row audit-filter-row-dates">
+        <div><label class="form-label" for="auditFrom">Desde</label><input id="auditFrom" name="from" value="@Model.From?.ToString("yyyy-MM-dd")" type="date" class="form-control" /></div>
+        <div><label class="form-label" for="auditTo">Hasta</label><input id="auditTo" name="to" value="@Model.To?.ToString("yyyy-MM-dd")" type="date" class="form-control" /></div>
+        <div class="audit-filter-actions"><button class="btn btn-primary" type="submit">Filtrar</button><a class="btn btn-ghost" href="/Admin/AuditLog">Limpiar</a></div>
+    </div>
+</form>
+<section class="panel-card p-0 overflow-hidden"><div class="audit-results-scroll table-responsive"><table class="table data-table align-middle"><thead><tr><th>Fecha y hora</th><th>Usuario</th><th>Acción</th><th>Entidad</th><th>ID</th><th>Resumen</th></tr></thead><tbody>@foreach (var item in Model.Items) { <tr><td class="text-nowrap">@item.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")</td><td>@item.UserDisplayName</td><td><code>@item.Action</code></td><td>@item.EntityType</td><td>@item.EntityId</td><td class="audit-summary">@item.Summary</td></tr> }@if (Model.Items.Count == 0) { <tr><td colspan="6" class="text-center py-5 text-secondary">No hay entradas que coincidan con los filtros.</td></tr> }</tbody></table></div></section>
+@if (Model.TotalPages > 1) { <nav class="publication-pagination mt-4" aria-label="Paginación de bitácora">@for (var n = 1; n <= Model.TotalPages; n++) { <a class="@(Model.Page == n ? "active" : "")" href="@Url.Action("Index", new { user = Model.User, action = Model.Action, entity = Model.Entity, from = Model.From, to = Model.To, page = n })" aria-current="@(Model.Page == n ? "page" : null)">@n</a> }</nav> }

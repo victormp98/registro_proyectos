@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#102D50" />
+    <title>@ViewData["Title"] · Portal de Proyectos</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/portal.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/identity.css" asp-append-version="true" />
+</head>
+<body class="public-shell">
+    <a class="skip-link" href="#main-content">Saltar al contenido</a>
+    <header class="public-header">
+        <nav class="navbar navbar-expand-lg" aria-label="Navegación principal">
+            <div class="container-xl">
+                <a class="portal-brand" asp-area="" asp-controller="Home" asp-action="Index" aria-label="Portal de Proyectos, inicio">
+                    <span class="brand-mark" aria-hidden="true"><svg class="icon"><use href="/assets/icons.svg#icon-logo"></use></svg></span>
+                    <span>Portal de <strong>Proyectos</strong></span>
+                </a>
+                <details class="header-search @((Context.Request.Path.Value?.Equals("/proyectos", StringComparison.OrdinalIgnoreCase) == true || Context.Request.Path.Value?.Equals("/noticias", StringComparison.OrdinalIgnoreCase) == true) ? "d-none" : null)">
+                    <summary aria-label="Buscar proyectos"><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#icon-search"></use></svg><span class="search-caption">Buscar</span></summary>
+                    <form action="/proyectos" method="get" role="search">
+                        <label for="headerProjectSearch">Encuentra un proyecto</label>
+                        <div><input id="headerProjectSearch" class="form-control" name="search" type="search" maxlength="120" placeholder="Nombre del proyecto" /><button class="btn btn-primary" type="submit" aria-label="Buscar proyectos">→</button></div>
+                    </form>
+                </details>
+                <button class="navbar-toggler portal-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#publicNavigation" aria-controls="publicNavigation" aria-expanded="false" aria-label="Abrir navegación">
+                    <svg class="icon"><use href="/assets/icons.svg#icon-menu"></use></svg>
+                </button>
+                <div class="collapse navbar-collapse" id="publicNavigation">
+                    <ul class="navbar-nav mx-auto align-items-lg-center gap-lg-2">
+                        <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Inicio</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="Projects">Proyectos</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/noticias">Noticias</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/#como-funciona">Cómo funciona</a></li>
+                    </ul>
+                    <div class="nav-actions">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <a class="btn btn-ghost" asp-area="@(User.IsInRole(SystemRoles.Student) ? "Student" : "Admin")" asp-controller="Dashboard" asp-action="Index">Mi panel</a>
+                            <form asp-area="" asp-controller="Account" asp-action="Logout" method="post"><button class="btn btn-primary" type="submit">Cerrar sesión</button></form>
+                        }
+                        else
+                        {
+                            <a class="btn btn-ghost" asp-area="" asp-controller="Account" asp-action="Login">Iniciar sesión</a>
+                            <a class="btn btn-primary" asp-area="" asp-controller="Account" asp-action="Register">Crear cuenta</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main id="main-content" role="main">@RenderBody()</main>
+    <footer class="public-footer">
+        <div class="container-xl footer-grid">
+            <div>
+                <a class="portal-brand portal-brand-light" asp-area="" asp-controller="Home" asp-action="Index">
+                    <span class="brand-mark"><svg class="icon"><use href="/assets/icons.svg#icon-logo"></use></svg></span>
+                    <span>Portal de <strong>Proyectos</strong></span>
+                </a>
+                <p class="mt-3 mb-0">Ideas, seguimiento y talento académico en un espacio para compartir.</p>
+            </div>
+            <nav class="footer-links" aria-label="Explorar"><strong>Explorar</strong><a href="/proyectos">Proyectos</a><a href="/noticias">Noticias</a></nav>
+            <nav class="footer-links" aria-label="Información"><strong>Información</strong><a href="/#como-funciona">Cómo funciona</a><a asp-area="" asp-controller="Home" asp-action="Privacy">Privacidad</a></nav>
+            <nav class="footer-links" aria-label="Cuenta"><strong>Tu espacio</strong><a asp-area="" asp-controller="Account" asp-action="Register">Crear cuenta</a><a asp-area="" asp-controller="Account" asp-action="Login">Iniciar sesión</a></nav>
+            <div class="footer-meta"><span>Ideas que conectan a la comunidad académica</span><span>&copy; @DateTime.Now.Year Portal de Proyectos</span></div>
+        </div>
+    </footer>
+    <partial name="_FlashMessages" />
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/portal.js" asp-append-version="true"></script>
+    <script src="~/js/discovery.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

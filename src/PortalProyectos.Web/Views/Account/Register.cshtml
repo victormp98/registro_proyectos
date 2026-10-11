@@ -1,0 +1,24 @@
+@model PortalProyectos.Web.Models.Account.RegisterViewModel
+@{ ViewData["Title"] = "Crear cuenta"; }
+<section class="auth-page"><div class="container-xl"><div class="auth-wrap">
+    <aside class="auth-aside"><span class="hero-kicker">Tu punto de partida</span><h1>Crea tu perfil académico.</h1><p>Administración validará la información antes de habilitar el registro de proyectos.</p><ul class="auth-list"><li><svg class="icon"><use href="/assets/icons.svg#icon-user"></use></svg>Completa tus datos personales y académicos</li><li><svg class="icon"><use href="/assets/icons.svg#icon-clock"></use></svg>Tu cuenta iniciará con estado Pendiente</li><li><svg class="icon"><use href="/assets/icons.svg#icon-check"></use></svg>Podrás actualizar el perfil mientras esperas</li></ul></aside>
+    <div class="auth-form"><span class="eyebrow">Registro de alumnos</span><h2>Crear cuenta</h2><p class="form-intro">Cuéntanos quién eres y selecciona tus datos académicos para comenzar.</p>
+        <form asp-action="Register" method="post">
+            <div asp-validation-summary="ModelOnly"></div>
+            <div class="row g-3">
+                <div class="col-12"><label asp-for="FullName" class="form-label"></label><input asp-for="FullName" class="form-control" autocomplete="name" /><span asp-validation-for="FullName"></span></div>
+                <div class="col-md-6"><label asp-for="EnrollmentNumber" class="form-label"></label><input asp-for="EnrollmentNumber" class="form-control" autocomplete="username" /><span asp-validation-for="EnrollmentNumber"></span></div>
+                <div class="col-md-6"><label asp-for="Email" class="form-label"></label><input asp-for="Email" class="form-control" autocomplete="email" /><span asp-validation-for="Email"></span></div>
+                <div class="col-12"><label asp-for="CareerId" class="form-label"></label><select asp-for="CareerId" asp-items="Model.Careers" class="form-select"><option value="0">Selecciona tu carrera</option></select><span asp-validation-for="CareerId"></span></div>
+                <div class="col-md-6"><label asp-for="GradeId" class="form-label"></label><select asp-for="GradeId" asp-items="Model.Grades" class="form-select"><option value="0">Selecciona tu grado</option></select><span asp-validation-for="GradeId"></span></div>
+                <div class="col-md-6"><label asp-for="AcademicGroupId" class="form-label"></label><select asp-for="AcademicGroupId" asp-items="Model.Groups" class="form-select"><option value="0">Selecciona tu grupo</option></select><span asp-validation-for="AcademicGroupId"></span></div>
+                <div class="col-md-6"><label asp-for="Password" class="form-label"></label><div class="password-input-group"><input asp-for="Password" class="form-control" autocomplete="new-password" /><button class="password-toggle" type="button" data-password-toggle aria-controls="Password" aria-label="Mostrar contraseña" aria-pressed="false" title="Mostrar contraseña"><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#icon-eye"></use></svg></button></div><span class="form-hint">10 caracteres, mayúscula, minúscula, número y símbolo.</span><span asp-validation-for="Password"></span></div>
+                <div class="col-md-6"><label asp-for="ConfirmPassword" class="form-label"></label><div class="password-input-group"><input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" /><button class="password-toggle" type="button" data-password-toggle aria-controls="ConfirmPassword" aria-label="Mostrar contraseña" aria-pressed="false" title="Mostrar contraseña"><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#icon-eye"></use></svg></button></div><span asp-validation-for="ConfirmPassword"></span></div>
+                <div class="col-12"><div class="form-check"><input asp-for="AcceptPrivacy" class="form-check-input" /><label class="form-check-label" asp-for="AcceptPrivacy">Acepto el tratamiento local de mis datos conforme al <a asp-controller="Home" asp-action="Privacy">aviso de privacidad</a>.</label><span asp-validation-for="AcceptPrivacy"></span></div></div>
+                <div class="col-12"><button class="btn btn-primary w-100" type="submit">Crear mi perfil</button></div>
+            </div>
+        </form>
+        <p class="text-center text-secondary mt-4 mb-0">¿Ya tienes cuenta? <a asp-action="Login" class="fw-bold">Iniciar sesión</a></p>
+    </div>
+</div></div></section>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

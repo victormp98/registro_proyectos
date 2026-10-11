@@ -1,0 +1,19 @@
+@using System.Security.Claims
+@using PortalProyectos.Application.Notifications
+@inject INotificationService NotificationService
+@{
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var unread = userId is null ? 0 : await NotificationService.GetUnreadCountAsync(userId);
+}
+<div class="notification-center" data-notification-widget data-recent-url="/Notifications/recent" data-hub-url="/hubs/notifications">
+    <button class="notification-bell" type="button" data-notification-toggle aria-expanded="false" aria-controls="notificationDropdown" aria-label="Notificaciones, @unread sin leer">
+        <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#icon-bell"></use></svg>
+        <span class="notification-count @(unread == 0 ? "d-none" : "")" data-notification-count>@(unread > 99 ? "99+" : unread)</span>
+    </button>
+    <section class="notification-dropdown" id="notificationDropdown" data-notification-dropdown hidden>
+        <header><div><strong>Notificaciones</strong><span data-notification-summary>@unread sin leer</span></div><a href="/Notifications">Ver todas</a></header>
+        <div class="notification-dropdown-list" data-notification-list aria-live="polite"><div class="notification-loading">Abre para consultar tus avisos.</div></div>
+        <footer><a href="/Notifications">Ir al centro de notificaciones</a></footer>
+    </section>
+    <form class="d-none" data-notification-token>@Html.AntiForgeryToken()</form>
+</div>

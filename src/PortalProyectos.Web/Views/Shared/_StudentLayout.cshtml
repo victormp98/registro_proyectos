@@ -1,0 +1,61 @@
+@using Microsoft.AspNetCore.Identity
+@using PortalProyectos.Infrastructure.Identity
+@inject UserManager<ApplicationUser> UserManager
+@{
+    var currentStudent = await UserManager.GetUserAsync(User);
+    var studentDisplayName = currentStudent?.FullName;
+    var studentInitial = string.IsNullOrWhiteSpace(studentDisplayName) ? "A" : studentDisplayName.Trim()[0].ToString().ToUpperInvariant();
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#102D50" />
+    <title>@ViewData["Title"] · Portal de Proyectos</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/portal.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/identity.css" asp-append-version="true" />
+</head>
+<body class="dashboard-shell">
+    <a class="skip-link" href="#dashboard-content">Saltar al contenido</a>
+    <aside class="dashboard-sidebar" id="dashboardSidebar" aria-label="Panel del alumno">
+        <div class="sidebar-head">
+            <a class="portal-brand portal-brand-light" asp-area="" asp-controller="Home" asp-action="Index">
+                <span class="brand-mark"><svg class="icon"><use href="/assets/icons.svg#icon-logo"></use></svg></span>
+                <span class="brand-full">Portal de <strong>Proyectos</strong></span>
+            </a>
+            <button class="sidebar-close d-lg-none" type="button" data-sidebar-close aria-label="Cerrar menú">×</button>
+        </div>
+        <nav class="sidebar-nav">
+            <span class="sidebar-label">Espacio del alumno</span>
+            <a class="sidebar-link" asp-area="Student" asp-controller="Dashboard" asp-action="Index"><svg class="icon"><use href="/assets/icons.svg#icon-home"></use></svg><span>Inicio</span></a>
+            <a class="sidebar-link" asp-area="Student" asp-controller="Profile" asp-action="Index"><svg class="icon"><use href="/assets/icons.svg#icon-user"></use></svg><span>Mi perfil</span></a>
+            <a class="sidebar-link" asp-area="Student" asp-controller="Projects" asp-action="Index"><svg class="icon"><use href="/assets/icons.svg#icon-folder"></use></svg><span>Mis proyectos</span></a>
+            <form asp-area="Student" asp-controller="Projects" asp-action="Create" method="post"><button class="sidebar-link sidebar-button" type="submit"><svg class="icon"><use href="/assets/icons.svg#icon-plus"></use></svg><span>Nuevo proyecto</span></button></form>
+            <a class="sidebar-link" href="/Notifications"><svg class="icon"><use href="/assets/icons.svg#icon-bell"></use></svg><span>Notificaciones</span></a>
+        </nav>
+        <div class="sidebar-footer">
+            <a class="sidebar-link" asp-area="" asp-controller="Home" asp-action="Index"><svg class="icon"><use href="/assets/icons.svg#icon-eye"></use></svg><span>Ver portal</span></a>
+            <form asp-area="" asp-controller="Account" asp-action="Logout" method="post"><button class="sidebar-link sidebar-button" type="submit"><svg class="icon"><use href="/assets/icons.svg#icon-logout"></use></svg><span>Cerrar sesión</span></button></form>
+        </div>
+    </aside>
+    <div class="sidebar-scrim" data-sidebar-close></div>
+    <div class="dashboard-main">
+        <header class="dashboard-topbar">
+            <button class="topbar-menu" type="button" data-sidebar-open aria-label="Abrir menú"><svg class="icon"><use href="/assets/icons.svg#icon-menu"></use></svg></button>
+            <div><span class="eyebrow">Portal de Proyectos</span><strong>Panel del alumno</strong></div>
+            @await Html.PartialAsync("_NotificationCenter")
+            <div class="user-chip"><span class="avatar" aria-label="@studentDisplayName">@studentInitial</span><span class="d-none d-sm-block">@studentDisplayName</span></div>
+        </header>
+        <main id="dashboard-content" class="dashboard-content" role="main">@RenderBody()</main>
+    </div>
+    <partial name="_FlashMessages" />
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/signalr/signalr.min.js" asp-append-version="true"></script>
+    <script src="~/js/portal.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

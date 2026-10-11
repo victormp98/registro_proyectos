@@ -1,0 +1,22 @@
+@model PortalProyectos.Web.Models.Student.StudentProfileViewModel
+@{
+    ViewData["Title"] = "Mi perfil";
+    var badgeClass = Model.Status switch { AccountStatus.Approved => "badge-approved", AccountStatus.Pending => "badge-pending", AccountStatus.Rejected => "badge-rejected", AccountStatus.Blocked => "badge-blocked", _ => "badge-deactivated" };
+    var statusLabel = Model.Status switch { AccountStatus.Approved => "Aprobada", AccountStatus.Pending => "Pendiente", AccountStatus.Rejected => "Rechazada", AccountStatus.Blocked => "Bloqueada", _ => "Desactivada" };
+}
+<div class="page-head"><div><span class="eyebrow">Cuenta del alumno</span><h1>Mi perfil</h1><p>Mantén correctos tus datos. La matrícula no puede modificarse desde el perfil.</p></div><span class="status-badge @badgeClass">@statusLabel</span></div>
+<form asp-action="Index" method="post" class="panel-card form-card">
+    <div asp-validation-summary="ModelOnly"></div>
+    <section class="form-section"><h2>Datos personales</h2><div class="row g-3">
+        <div class="col-md-6"><label class="form-label">Matrícula</label><input class="form-control" value="@Model.EnrollmentNumber" disabled /><span class="form-hint">Identificador único de la cuenta.</span></div>
+        <div class="col-md-6"><label asp-for="FullName" class="form-label"></label><input asp-for="FullName" class="form-control" autocomplete="name" /><span asp-validation-for="FullName"></span></div>
+        <div class="col-12"><label asp-for="Email" class="form-label"></label><input asp-for="Email" class="form-control" autocomplete="email" /><span asp-validation-for="Email"></span></div>
+    </div></section>
+    <section class="form-section"><h2>Datos académicos</h2><div class="row g-3">
+        <div class="col-12"><label asp-for="CareerId" class="form-label"></label><select asp-for="CareerId" asp-items="Model.Careers" class="form-select"></select><span asp-validation-for="CareerId"></span></div>
+        <div class="col-md-6"><label asp-for="GradeId" class="form-label"></label><select asp-for="GradeId" asp-items="Model.Grades" class="form-select"></select><span asp-validation-for="GradeId"></span></div>
+        <div class="col-md-6"><label asp-for="AcademicGroupId" class="form-label"></label><select asp-for="AcademicGroupId" asp-items="Model.Groups" class="form-select"></select><span asp-validation-for="AcademicGroupId"></span></div>
+    </div></section>
+    <section class="form-section d-flex flex-wrap justify-content-end gap-2"><a class="btn btn-ghost" asp-area="Student" asp-controller="Dashboard" asp-action="Index">Cancelar</a><button class="btn btn-primary" type="submit">Guardar cambios</button></section>
+</form>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

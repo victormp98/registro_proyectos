@@ -1,0 +1,45 @@
+@model PortalProyectos.Web.Models.Student.StudentProjectsViewModel
+@{
+    ViewData["Title"] = "Mis proyectos";
+    string Label(ProjectAdministrativeStatus status) => status switch {
+        ProjectAdministrativeStatus.Draft => "Borrador", ProjectAdministrativeStatus.Submitted => "Enviado",
+        ProjectAdministrativeStatus.UnderReview => "En revisión", ProjectAdministrativeStatus.ChangesRequested => "Correcciones",
+        ProjectAdministrativeStatus.Resubmitted => "Reenviado", ProjectAdministrativeStatus.Approved => "Aprobado", _ => "Rechazado"
+    };
+}
+<div class="page-head"><div><span class="eyebrow">Portafolio personal</span><h1>Mis proyectos</h1><p>Prepara borradores y consulta cada etapa de revisión.</p></div>
+@if (Model.AccountStatus == AccountStatus.Approved) { <form asp-action="Create" method="post"><button class="btn btn-primary btn-icon" type="submit"><svg class="icon"><use href="/assets/icons.svg#icon-plus"></use></svg>Nuevo proyecto</button></form> }
+</div>
+@if (Model.AccountStatus != AccountStatus.Approved) { <div class="status-banner status-pending"><svg class="icon"><use href="/assets/icons.svg#icon-clock"></use></svg><div><strong>Registro de proyectos no disponible</strong><p>Tu cuenta debe estar aprobada. Puedes seguir actualizando tu perfil mientras administración la revisa.</p></div></div> }
+<nav class="filter-pills project-scope-pills" aria-label="Tipo de participación">
+    <a class="@(Model.Scope == "all" ? "active" : "")" asp-action="Index" asp-route-scope="all" asp-route-status="@Model.Status">Todos</a>
+    <a class="@(Model.Scope == "own" ? "active" : "")" asp-action="Index" asp-route-scope="own" asp-route-status="@Model.Status">Propios</a>
+    <a class="@(Model.Scope == "linked" ? "active" : "")" asp-action="Index" asp-route-scope="linked" asp-route-status="@Model.Status">Como participante</a>
+</nav>
+<nav class="filter-pills" aria-label="Filtrar proyectos por estado">
+    <a class="@(Model.Status is null ? "active" : "")" asp-action="Index" asp-route-scope="@Model.Scope">Todos</a>
+    @foreach (var state in Enum.GetValues<ProjectAdministrativeStatus>()) { <a class="@(Model.Status == state ? "active" : "")" asp-action="Index" asp-route-status="@state" asp-route-scope="@Model.Scope">@Label(state)</a> }
+</nav>
+@if (Model.Projects.Count == 0)
+{
+    <section class="empty-state"><span class="empty-illustration"><svg class="icon"><use href="/assets/icons.svg#icon-folder"></use></svg></span><h2>No hay proyectos en esta vista</h2><p>Los borradores aparecen aquí desde que se crean y sólo llegan a administración cuando decides enviarlos.</p></section>
+}
+else
+{
+    <div class="student-project-grid">
+    @foreach (var project in Model.Projects)
+    {
+        <article class="student-project-card @(project.IsLinkedParticipant ? "is-linked-project" : "")">
+            <div class="project-card-cover"><span class="project-monogram large">@project.Name[0]</span><span class="status-badge project-status status-@project.Status.ToString().ToLowerInvariant()">@Label(project.Status)</span></div>
+            <div class="project-card-body">@if (project.IsLinkedParticipant) { <span class="eyebrow">Participas en este proyecto</span> } else { <span class="eyebrow">@project.Subject</span> }<h2>@project.Name</h2><div class="project-card-meta"><span>@project.Subject · @project.SchoolCycle</span><span>v@project.VersionNumber · revisión @project.ReviewNumber</span><span>Actualizado @project.UpdatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</span></div>
+                <div class="project-card-actions">
+                    @if (!project.IsLinkedParticipant && project.Status is ProjectAdministrativeStatus.Draft or ProjectAdministrativeStatus.ChangesRequested) { <a class="btn btn-primary btn-sm" asp-action="Edit" asp-route-id="@project.Id">@(project.Status == ProjectAdministrativeStatus.Draft ? "Continuar" : "Corregir")</a> }
+                    <a class="btn btn-outline-primary btn-sm" asp-action="Details" asp-route-id="@project.Id">Ver detalle</a>
+                    @if (!project.IsLinkedParticipant && project.Status == ProjectAdministrativeStatus.Submitted) { <form asp-action="CancelSubmission" asp-route-id="@project.Id" method="post" data-confirm="¿Cancelar el envío y volver a borrador?"><button class="btn btn-ghost btn-sm" type="submit">Cancelar envío</button></form> }
+                    @if (!project.IsLinkedParticipant && project.Status == ProjectAdministrativeStatus.Draft && project.ReviewNumber == 0) { <form asp-action="Delete" asp-route-id="@project.Id" method="post" data-confirm="¿Eliminar definitivamente este borrador?"><button class="btn btn-outline-danger btn-sm" type="submit">Eliminar</button></form> }
+                </div>
+            </div>
+        </article>
+    }
+    </div>
+}

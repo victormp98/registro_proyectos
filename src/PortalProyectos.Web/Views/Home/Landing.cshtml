@@ -1,0 +1,102 @@
+@using PortalProyectos.Application.Projects
+@using PortalProyectos.Application.News
+@using PortalProyectos.Domain.Projects
+@{
+    ViewData["Title"] = "Ideas que transforman";
+    var projects = ViewBag.PublicProjects as IReadOnlyList<PublicProjectCard> ?? [];
+    var news = ViewBag.FeaturedNews as IReadOnlyList<NewsCard> ?? [];
+    var spotlight = projects.Where(p => p.IsFeatured).ToArray();
+    if (spotlight.Length == 0) spotlight = projects.Take(1).ToArray();
+    var startUrl = User.Identity?.IsAuthenticated != true ? Url.Action("Register", "Account")
+        : User.IsInRole(SystemRoles.Student) ? "/Student/Projects" : "/Admin/Dashboard";
+}
+<section class="discovery-hero">
+    <div class="container-xl discovery-hero-grid">
+        <div class="discovery-intro">
+            <span class="discovery-kicker"><span aria-hidden="true"></span> Ideas · Ingeniería · Comunidad</span>
+            <h1>Ideas que transforman <em>nuestro futuro.</em></h1>
+            <p>Un espacio para impulsar, visibilizar y compartir proyectos académicos que generan conocimiento, innovación e impacto.</p>
+            <div class="discovery-actions"><a class="btn btn-primary btn-lg btn-icon" href="@startUrl">Registrar proyecto <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#icon-arrow"></use></svg></a><a class="btn btn-outline-light btn-lg" href="/proyectos">Explorar proyectos</a></div>
+            <div class="discovery-assurances"><span><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#icon-shield"></use></svg> Acceso protegido</span><span><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#icon-check"></use></svg> Revisión administrativa</span></div>
+        </div>
+        <div class="spotlight" data-project-rail>
+            @if (spotlight.Length > 0)
+            {
+                <div class="spotlight-track" id="heroProjects" data-rail-track tabindex="0" role="region" aria-label="Proyectos destacados">
+                    @foreach (var project in spotlight)
+                    {
+                        <article class="spotlight-card">
+                            <div class="spotlight-image">
+                                @if (project.CoverUrl is not null)
+                                {
+                                    <img class="spotlight-backdrop" src="@project.CoverUrl" alt="" aria-hidden="true" />
+                                    <img class="spotlight-photo" src="@project.CoverUrl" alt="Portada de @project.Name" />
+                                }
+                                else
+                                {
+                                    <span class="spotlight-placeholder"><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#icon-lightbulb"></use></svg><span>Una idea que toma forma</span></span>
+                                }
+                                <span class="spotlight-label">@(project.IsFeatured ? "Proyecto destacado" : "Lo más reciente")</span>
+                                <div class="spotlight-content"><span class="spotlight-discipline">@project.Career</span><h2><a href="/proyectos/@project.Id">@project.Name</a></h2><p>@project.Subject · @project.Type</p><div class="spotlight-meta"><span>@(project.DevelopmentStatus == ProjectDevelopmentStatus.Completed ? "Terminado" : "En proceso")</span><span aria-label="@project.LikeCount me gusta">♡ @project.LikeCount</span><a href="/proyectos/@project.Id">Ver proyecto <span aria-hidden="true">↗</span></a></div></div>
+                                <a class="spotlight-hit-area" href="/proyectos/@project.Id" aria-label="Ver proyecto @project.Name"></a>
+                            </div>
+                        </article>
+                    }
+                </div>
+                @if (spotlight.Length > 1)
+                {
+                    <div class="rail-controls" data-rail-controls hidden><button type="button" data-rail-prev aria-controls="heroProjects" aria-label="Proyecto destacado anterior">←</button><button type="button" data-rail-next aria-controls="heroProjects" aria-label="Proyecto destacado siguiente">→</button></div>
+                }
+            }
+            else
+            {
+                <article class="spotlight-card spotlight-empty"><div class="spotlight-image"><span class="spotlight-placeholder"><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#icon-lightbulb"></use></svg><span>Ideas en construcción</span></span></div><div class="spotlight-content"><span class="spotlight-discipline">El siguiente paso empieza contigo</span><h2>Tu idea puede inspirar a otros.</h2><p>Aquí encontrarás los proyectos que la comunidad comparta después de su revisión y publicación.</p><a class="btn btn-primary" href="@startUrl">Comienza tu propuesta →</a></div></article>
+            }
+        </div>
+    </div>
+</section>
+<section class="discovery-section project-showcase" aria-labelledby="showcaseTitle">
+    <div class="container-xl" data-project-rail>
+        <header class="discovery-section-head"><div><span class="eyebrow">Explora el talento</span><h2 id="showcaseTitle">Proyectos que merecen <span>una mirada.</span></h2><p>De los primeros prototipos a soluciones listas para compartir.</p></div><a class="section-link" href="/proyectos">Ver todos los proyectos ↗</a></header>
+        @if (projects.Count > 0)
+        {
+            <div class="project-rail" id="discoveryProjects" data-rail-track tabindex="0" role="region" aria-label="Proyectos destacados y recientes. Usa las flechas para desplazarte.">
+                @foreach (var project in projects) { <partial name="_DiscoveryProjectCard" model="project" /> }
+            </div>
+            <div class="rail-footer"><span>Explora ideas de la comunidad</span><div class="rail-controls" data-rail-controls hidden><button type="button" data-rail-prev aria-controls="discoveryProjects" aria-label="Proyectos anteriores">←</button><button type="button" data-rail-next aria-controls="discoveryProjects" aria-label="Proyectos siguientes">→</button></div></div>
+        }
+        else
+        {
+            <div class="discovery-empty"><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#icon-folder"></use></svg><div><h3>Pronto habrá ideas por descubrir</h3><p>Los proyectos aparecerán aquí cuando sean aprobados y publicados.</p></div></div>
+        }
+    </div>
+</section>
+<section class="discovery-section workflow-section" id="como-funciona" aria-labelledby="workflowTitle">
+    <div class="container-xl workflow-layout"><header class="discovery-section-head"><div><span class="eyebrow">Cómo funciona</span><h2 id="workflowTitle">De la idea al impacto, <span>paso a paso.</span></h2><p>Crea tu cuenta y espera su aprobación para comenzar.</p></div></header>
+        <ol class="workflow-grid">
+            <li><span class="workflow-number">01</span><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#icon-lightbulb"></use></svg><h3>Registra tu proyecto</h3><p>Da nombre a tu idea y guarda los datos básicos como borrador.</p></li>
+            <li><span class="workflow-number">02</span><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#icon-users"></use></svg><h3>Construye la propuesta</h3><p>Completa la información, agrega participantes con cuenta aprobada y documentación opcional.</p></li>
+            <li><span class="workflow-number">03</span><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#icon-check"></use></svg><h3>Envía a revisión</h3><p>Consulta las observaciones y realiza las correcciones que se soliciten.</p></li>
+            <li><span class="workflow-number">04</span><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#icon-eye"></use></svg><h3>Comparte el resultado</h3><p>Después de aprobarse, administración puede publicar el proyecto para que todos lo conozcan.</p></li>
+        </ol>
+    </div>
+</section>
+<section class="discovery-section editorial-section" aria-labelledby="editorialTitle">
+    <div class="container-xl"><header class="discovery-section-head"><div><span class="eyebrow">Conecta con lo que sucede</span><h2 id="editorialTitle">Noticias <span>y oportunidades.</span></h2></div><a class="section-link" href="/noticias">Ver todas las noticias ↗</a></header>
+        @if (news.Count > 0)
+        {
+            <div class="editorial-grid">
+                @foreach (var post in news.Take(3))
+                {
+                    <article class="editorial-card"><a class="editorial-image" href="/noticias/@post.Id" aria-label="Leer @post.Title">@if (post.CoverUrl is not null) { <img src="@post.CoverUrl" alt="Portada de @post.Title" loading="lazy" /> } else { <svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#icon-book"></use></svg> }</a><div class="editorial-copy"><span class="editorial-date">@post.PublishedAtUtc?.ToLocalTime().ToString("dd MMM yyyy") @if (post.IsFeatured) { <span> · Destacada</span> }</span><h3><a href="/noticias/@post.Id">@post.Title</a></h3><p>@post.Summary</p><a class="editorial-more" href="/noticias/@post.Id" aria-label="Leer más: @post.Title">Leer noticia ↗</a></div></article>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="discovery-empty"><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#icon-book"></use></svg><div><h3>Este espacio se prepara para nuevas historias</h3><p>Consulta aquí las próximas noticias de la comunidad académica.</p></div></div>
+        }
+    </div>
+</section>
+<section class="discovery-section opportunity-section"><div class="container-xl"><header class="discovery-section-head"><div><span class="eyebrow">Una comunidad de ideas</span><h2>Más que proyectos, <span>nuevas perspectivas.</span></h2></div></header><div class="opportunity-grid"><article><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#icon-eye"></use></svg><h3>Haz visible tu trabajo</h3><p>Presenta lo que estás construyendo y comparte el resultado cuando sea publicado.</p></article><article><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#icon-lightbulb"></use></svg><h3>Explora otras ideas</h3><p>Descubre proyectos de diferentes carreras, materias y ciclos escolares.</p></article><article><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#icon-clock"></use></svg><h3>Da seguimiento</h3><p>Consulta el estado, las observaciones y el historial de tus proyectos.</p></article><article><svg class="icon" aria-hidden="true"><use href="/assets/icons.svg#icon-users"></use></svg><h3>Comparte conocimiento</h3><p>Conoce propuestas académicas y resultados compartidos por la comunidad.</p></article></div></div></section>
+<section class="discovery-section closing-section"><div class="container-xl"><div class="discovery-cta"><div><span class="discovery-kicker">Tu idea tiene un lugar aquí</span><h2>¿Tienes una idea <em>o un proyecto?</em></h2><p>Dale forma, comparte tu conocimiento e inspira a la comunidad.</p></div><div class="discovery-actions"><a class="btn btn-primary btn-lg" href="@startUrl">Registrar proyecto →</a><a class="btn btn-outline-light" href="/proyectos">Explorar proyectos</a></div></div></div></section>

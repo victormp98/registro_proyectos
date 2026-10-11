@@ -1,0 +1,13 @@
+@model IReadOnlyList<PortalProyectos.Application.Catalogs.CareerItem>
+@{ ViewData["Title"] = "Carreras"; }
+<div class="page-head"><div><span class="eyebrow">Configuración</span><h1>Carreras</h1><p>Estas opciones se muestran en el registro y el perfil. Desactivar preserva el historial.</p></div><a class="btn btn-primary btn-icon" asp-action="Create"><svg class="icon"><use href="/assets/icons.svg#icon-plus"></use></svg>Nueva carrera</a></div>
+<div class="panel-card mb-3"><label class="form-label" for="careerSearch">Buscar carrera</label><input id="careerSearch" class="form-control" type="search" placeholder="Nombre o clave" /></div>
+<section class="panel-card p-0 overflow-hidden"><div class="table-responsive"><table class="table data-table"><thead><tr><th>Nombre</th><th>Clave</th><th>Uso</th><th>Disponibilidad</th><th class="text-end">Acciones</th></tr></thead><tbody id="careerRows">
+@foreach (var career in Model) { <tr><td class="fw-bold">@career.Name</td><td class="text-secondary">@(career.Code ?? "—")</td><td>@career.UsageCount referencias</td><td><span class="status-badge @(career.IsActive ? "badge-approved" : "badge-deactivated")">@(career.IsActive ? "Activa" : "Inactiva")</span></td><td class="text-end"><a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@career.Id">Editar</a></td></tr> }
+</tbody></table></div></section>
+<script>
+document.getElementById('careerSearch')?.addEventListener('input', event => {
+  const term = event.target.value.trim().toLocaleLowerCase();
+  document.querySelectorAll('#careerRows tr').forEach(row => row.hidden = !row.innerText.toLocaleLowerCase().includes(term));
+});
+</script>

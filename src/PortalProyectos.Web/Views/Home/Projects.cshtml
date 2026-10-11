@@ -1,0 +1,44 @@
+@using PortalProyectos.Application.Projects
+@using PortalProyectos.Domain.Projects
+@model PublicationPage
+@{
+    ViewData["Title"] = "Explorar proyectos";
+    var filter = (PublicProjectFilter)ViewBag.Filter;
+    string Development(ProjectDevelopmentStatus x) => x == ProjectDevelopmentStatus.Completed ? "Terminado" : "En proceso";
+}
+<section class="project-search-hero"><div class="container-xl project-list-heading"><div><span class="hero-kicker">Explora el talento</span><h1>Proyectos que merecen una mirada</h1><p>Ideas y propuestas compartidas por la comunidad académica.</p></div><div class="public-project-stats"><strong>@Model.TotalCount</strong><span>publicados</span></div></div></section>
+<div class="container-xl public-project-page">
+    <form method="get" action="/proyectos" class="project-filter-shell public-filter-grid" aria-label="Filtros de proyectos">
+        <div class="search-field"><svg class="icon"><use href="/assets/icons.svg#icon-search"></use></svg><input class="form-control" name="search" value="@filter.Search" placeholder="Buscar por nombre" aria-label="Buscar por nombre" /></div>
+        <select class="form-select" name="careerId" aria-label="Carrera"><option value="">Todas las carreras</option>@foreach (var x in Model.Careers) { <option value="@x.Id" selected="@(filter.CareerId == x.Id)">@x.Name</option> }</select>
+        <select class="form-select" name="subjectId" aria-label="Materia"><option value="">Todas las materias</option>@foreach (var x in Model.Subjects) { <option value="@x.Id" selected="@(filter.SubjectId == x.Id)">@x.Name</option> }</select>
+        <select class="form-select" name="typeId" aria-label="Tipo"><option value="">Todos los tipos</option>@foreach (var x in Model.Types) { <option value="@x.Id" selected="@(filter.TypeId == x.Id)">@x.Name</option> }</select>
+        <select class="form-select" name="developmentStatus" aria-label="Estado de desarrollo"><option value="">En cualquier estado</option><option value="InProgress" selected="@(filter.DevelopmentStatus == ProjectDevelopmentStatus.InProgress)">En proceso</option><option value="Completed" selected="@(filter.DevelopmentStatus == ProjectDevelopmentStatus.Completed)">Terminado</option></select>
+        <select class="form-select" name="cycleId" aria-label="Ciclo escolar"><option value="">Todos los ciclos</option>@foreach (var x in Model.Cycles) { <option value="@x.Id" selected="@(filter.CycleId == x.Id)">@x.Name</option> }</select>
+        <select class="form-select" name="sort" aria-label="Orden"><option value="">Destacados y recientes</option><option value="oldest" selected="@(filter.Sort == "oldest")">Más antiguos</option><option value="likes" selected="@(filter.Sort == "likes")">Más likes</option></select>
+        <div class="d-flex gap-2"><button class="btn btn-primary" type="submit">Aplicar</button><a class="btn btn-ghost" href="/proyectos">Limpiar</a></div>
+    </form>
+    @if (Model.Items.Count == 0) { <section class="project-placeholder"><div class="empty-state"><span class="empty-illustration"><svg class="icon"><use href="/assets/icons.svg#icon-folder"></use></svg></span><h2>No encontramos proyectos con esos filtros</h2><p>Prueba quitar algún filtro o buscar con otras palabras.</p><a href="/proyectos" class="btn btn-outline-primary">Ver todos los proyectos</a></div></section> }
+    else {
+        <div class="public-project-grid">
+        @foreach (var p in Model.Items) {
+            var initial = string.IsNullOrWhiteSpace(p.Name) ? "P" : p.Name[..1].ToUpperInvariant();
+            <article class="public-project-card @(p.IsFeatured ? "is-featured" : "")">
+                <a class="public-project-cover" href="/proyectos/@p.Id" aria-label="Ver proyecto @p.Name">
+                    @if (p.CoverUrl is not null) { <span class="project-cover-backdrop" aria-hidden="true"><img src="@p.CoverUrl" alt="" loading="lazy" /></span><img class="project-cover-image" src="@p.CoverUrl" alt="Portada: @p.Name" loading="lazy" /> }
+                    else { <span class="cover-pattern" aria-hidden="true"><span class="cover-orbit"></span><strong>@initial</strong><small>@p.Type</small></span> }
+                    @if (p.IsFeatured) { <span class="featured-ribbon">Destacado</span> }
+                    <span class="development-chip">@(Development(p.DevelopmentStatus))</span>
+                </a>
+                <div class="public-project-content"><div class="project-eyebrow">@p.Career <span>·</span> @p.Cycle</div><h2><a href="/proyectos/@p.Id">@p.Name</a></h2><p class="public-project-summary">@p.ProblemStatement</p><div class="public-project-tags"><span>@p.Subject</span><span>@p.Type</span></div>
+                    <div class="public-project-footer"><a class="btn btn-outline-primary btn-sm" href="/proyectos/@p.Id">Ver proyecto <span aria-hidden="true">→</span></a>
+                    @if ((bool?)ViewBag.CanLike == true) { <form method="post" action="/proyectos/@p.Id/like" class="like-form" data-like-form>@Html.AntiForgeryToken()<button type="submit" class="like-button @(p.IsLiked ? "is-liked" : "")" aria-label="@(p.IsLiked ? "Quitar me gusta" : "Me gusta")"><span aria-hidden="true">@(p.IsLiked ? "♥" : "♡")</span> <b data-like-count>@p.LikeCount</b></button></form> }
+                    else { <span class="like-count" aria-label="@p.LikeCount me gusta"><span aria-hidden="true">♡</span> @p.LikeCount</span> }
+                    </div></div>
+            </article>
+        }
+        </div>
+        @if (Model.TotalPages > 1) { <nav class="publication-pagination" aria-label="Paginación de proyectos">@for (var i = 1; i <= Model.TotalPages; i++) { <a class="@(i == Model.Page ? "active" : "")" href="@Url.Action("Projects", new { search = filter.Search, careerId = filter.CareerId, subjectId = filter.SubjectId, typeId = filter.TypeId, developmentStatus = filter.DevelopmentStatus, cycleId = filter.CycleId, sort = filter.Sort, page = i })" aria-current="@(i == Model.Page ? "page" : null)">@i</a> }</nav> }
+    }
+</div>
+<script src="~/js/public-projects.js" asp-append-version="true"></script>

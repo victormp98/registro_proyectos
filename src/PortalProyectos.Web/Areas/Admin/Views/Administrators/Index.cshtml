@@ -1,0 +1,26 @@
+@model IReadOnlyList<PortalProyectos.Web.Models.Admin.AdministrativeUserItem>
+@using PortalProyectos.Domain.Users
+@{ ViewData["Title"] = "Administradores";
+    var selectedStatus = ViewBag.Status as AccountStatus?;
+    string Label(AccountStatus status) => status switch { AccountStatus.Approved => "Activo", AccountStatus.Blocked => "Bloqueado", AccountStatus.Deactivated => "Eliminado", _ => "Histórico" };
+}
+<div class="page-head"><div><span class="eyebrow">Acceso administrativo · Superadministrador</span><h1>Administradores</h1><p>Las cuentas administrativas se crean aquí, nunca desde el registro público.</p></div><a class="btn btn-primary" href="/Admin/Administrators/create">＋ Crear administrador</a></div>
+@if (TempData["OneTimeCredential"] is string credential) { <section class="alert alert-warning" role="status"><strong>Entrega segura ahora:</strong> @credential<br /><small>No se almacena esta contraseña en texto plano. Compártela por un canal seguro y pide cambiarla al iniciar sesión.</small></section> }
+<form method="get" class="filter-bar"><input name="search" class="form-control" value="@ViewBag.Search" placeholder="Nombre, identificador o correo" aria-label="Buscar administradores" /><select name="status" class="form-select" aria-label="Filtrar por estado"><option value="">Todos</option>@foreach(var status in new[] { AccountStatus.Approved, AccountStatus.Blocked, AccountStatus.Deactivated }) { <option value="@status" selected="@(selectedStatus == status)">@Label(status)</option> }</select><button class="btn btn-outline-primary">Buscar</button></form>
+<section class="panel-card p-0 overflow-hidden"><div class="table-responsive"><table class="table data-table align-middle"><thead><tr><th>Administrador</th><th>Identificador</th><th>Estado</th><th>Alta</th><th>Acciones</th></tr></thead><tbody>
+@foreach (var item in Model) {
+    <tr><td><strong>@item.FullName</strong><div class="small text-secondary">@(item.Status == AccountStatus.Deactivated ? "Registro histórico" : item.Email)</div></td><td>@(item.Status == AccountStatus.Deactivated ? "Identificadores liberados" : item.EmployeeNumber)</td><td><span class="status-badge @(item.Status == AccountStatus.Approved ? "badge-approved" : item.Status == AccountStatus.Blocked ? "badge-blocked" : "badge-deactivated")">@Label(item.Status)</span></td><td>@item.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy")</td><td><div class="table-actions">
+    @if(item.Status == AccountStatus.Approved) {
+        <form method="post" action="/Admin/Administrators/@item.Id/block" data-confirm="¿Confirmas que deseas bloquear esta cuenta?">@Html.AntiForgeryToken()<button class="btn btn-sm btn-outline-warning">Bloquear</button></form>
+    }
+    @if(item.Status == AccountStatus.Blocked) {
+        <form method="post" action="/Admin/Administrators/@item.Id/unblock" data-confirm="¿Confirmas que deseas desbloquear esta cuenta?">@Html.AntiForgeryToken()<button class="btn btn-sm btn-outline-primary">Desbloquear</button></form>
+    }
+    @if(item.Status is AccountStatus.Approved or AccountStatus.Blocked) {
+        <form method="post" action="/Admin/Administrators/@item.Id/delete" data-confirm="¿Confirmas que deseas eliminar esta cuenta? No podrá reactivarse; para volver deberá crearse una cuenta nueva.">@Html.AntiForgeryToken()<button class="btn btn-sm btn-outline-danger">Eliminar</button></form>
+        <form method="post" action="/Admin/Administrators/@item.Id/reset-password" data-confirm="¿Generar una contraseña temporal nueva? La contraseña anterior dejará de funcionar.">@Html.AntiForgeryToken()<button class="btn btn-sm btn-ghost">Restablecer contraseña</button></form>
+    }
+    </div></td></tr>
+}
+@if (Model.Count == 0) { <tr><td colspan="5" class="text-center py-5 text-secondary">No hay administradores con esos criterios.</td></tr> }
+</tbody></table></div></section>

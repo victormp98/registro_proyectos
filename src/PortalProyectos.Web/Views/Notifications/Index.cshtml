@@ -1,0 +1,36 @@
+@model PortalProyectos.Web.Models.Notifications.NotificationPageViewModel
+@using PortalProyectos.Domain.Notifications
+@{
+    ViewData["Title"] = "Mis notificaciones";
+    Layout = User.IsInRole(SystemRoles.Administrator) || User.IsInRole(SystemRoles.SuperAdministrator)
+        ? "~/Views/Shared/_AdminLayout.cshtml" : "~/Views/Shared/_StudentLayout.cshtml";
+    string Icon(NotificationType type) => type switch {
+        NotificationType.AccountPending => "icon-user", NotificationType.AccountApproved or NotificationType.ProjectApproved => "icon-check",
+        NotificationType.AccountRejected or NotificationType.AccountBlocked or NotificationType.ProjectRejected => "icon-shield",
+        NotificationType.ProjectSubmitted or NotificationType.ProjectAssigned or NotificationType.ProjectChangesRequested => "icon-folder",
+        _ => "icon-bell"
+    };
+}
+<div class="page-head"><div><span class="eyebrow">Centro de avisos</span><h1>Mis notificaciones</h1><p>Los avisos quedan guardados aquí aunque no estuvieras conectado.</p></div>
+    @if (Model.Page.UnreadCount > 0) { <form asp-action="MarkAllRead" method="post" data-mark-all-notifications><button class="btn btn-outline-primary" type="submit">Marcar todas como leídas</button></form> }
+</div>
+<nav class="filter-pills" aria-label="Filtrar notificaciones"><a class="@(!Model.UnreadOnly ? "active" : "")" asp-action="Index">Todas</a><a class="@(Model.UnreadOnly ? "active" : "")" asp-action="Index" asp-route-unreadOnly="true">No leídas</a></nav>
+<section class="notification-page-list" data-notification-page-list>
+    @if (Model.Page.Items.Count == 0)
+    {
+        <div class="empty-state"><span class="empty-illustration"><svg class="icon"><use href="/assets/icons.svg#icon-bell"></use></svg></span><h2>No tienes notificaciones pendientes</h2><p>Cuando haya actividad de tu cuenta o tus proyectos, aparecerá aquí.</p></div>
+    }
+    else
+    {
+        @foreach (var item in Model.Page.Items)
+        {
+            <article class="notification-page-item @(item.IsRead ? "is-read" : "is-unread")" data-notification-id="@item.Id">
+                <span class="notification-icon"><svg class="icon"><use href="/assets/icons.svg#@Icon(item.Type)"></use></svg></span>
+                <div class="notification-content"><strong>@item.Title</strong><p>@item.Message</p><time datetime="@item.CreatedAtUtc.ToString("O")">@item.CreatedAtUtc.ToLocalTime().ToString("dd MMM yyyy, HH:mm")</time></div>
+                @if (!item.IsRead) { <form asp-action="MarkRead" asp-route-id="@item.Id" method="post"><button class="btn btn-sm btn-ghost" type="submit">Marcar leída</button></form> }
+                @if (item.Url is not null) { <a class="btn btn-sm btn-outline-primary" href="/Notifications/@item.Id/open">Abrir</a> }
+            </article>
+        }
+    }
+</section>
+@if (Model.Page.TotalCount > Model.Page.PageSize) { <nav class="notification-pagination" aria-label="Paginación"><span>Página @Model.Page.Page de @((int)Math.Ceiling(Model.Page.TotalCount / (double)Model.Page.PageSize))</span>@if (Model.Page.Page > 1) { <a class="btn btn-sm btn-outline-primary" asp-action="Index" asp-route-unreadOnly="@Model.UnreadOnly" asp-route-page="@(Model.Page.Page - 1)">Anterior</a> }@if (Model.Page.Page * Model.Page.PageSize < Model.Page.TotalCount) { <a class="btn btn-sm btn-outline-primary" asp-action="Index" asp-route-unreadOnly="@Model.UnreadOnly" asp-route-page="@(Model.Page.Page + 1)">Siguiente</a> }</nav> }
