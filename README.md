@@ -8,11 +8,14 @@ Está construida con ASP.NET Core 10 MVC, Identity, Entity Framework Core y SQLi
 
 - [Manual de uso editable](docs/Manual_Uso_e_Instalacion_Completo.pptx).
 - [Manual de uso en PDF](docs/Manual_Uso_e_Instalacion_Completo.pdf).
-- Las credenciales de demostración son datos locales y no deben publicarse ni reutilizarse en instalaciones reales. Genera cuentas de prueba únicas al preparar cada entrega.
+- Las cuentas de prueba y sus contraseñas se administran en el entorno local; no forman parte del código fuente.
+- Los directorios `imagenes-manual/` y `credenciales-manual/` están excluidos del control de versiones.
 
-El manual es la documentación de uso vigente. Las imágenes del manual están incrustadas en el PowerPoint. Las carpetas locales `imagenes-manual/` y `credenciales-manual/` están excluidas de Git.
+## Credenciales y datos de ejecución
 
-> **Aviso de seguridad:** una versión anterior del repositorio contenía un documento de credenciales de demostración. Aunque se retire de la rama actual, puede persistir en el historial Git. Si alguna cuenta o contraseña fue reutilizada en una instalación accesible, revoca sus sesiones y cámbiala antes de distribuir o desplegar el proyecto.
+La cuenta SuperAdministrador inicial se configura mediante `Portal__SeedAdmin__Email` y `Portal__SeedAdmin__Password` al preparar una base de datos nueva. Las contraseñas temporales deben ser únicas para cada instalación y requieren cambio después del primer inicio de sesión.
+
+No incluyas archivos SQLite, claves de protección de datos, contraseñas ni documentos privados en commits o paquetes públicos. Conserva por separado los respaldos del directorio `data/` y los archivos cargados en `storage/`.
 
 ## Ejecutar el paquete con los datos actuales
 
