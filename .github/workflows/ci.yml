@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "security/**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  dotnet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - name: Restore
+        run: dotnet restore PortalProyectos.sln
+      - name: Build
+        run: dotnet build PortalProyectos.sln --configuration Release --no-restore
+      - name: Functional tests
+        run: dotnet run --project tests/PortalProyectos.FunctionalTests/PortalProyectos.FunctionalTests.csproj --configuration Release --no-build
