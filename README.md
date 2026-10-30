@@ -8,9 +8,11 @@ Está construida con ASP.NET Core 10 MVC, Identity, Entity Framework Core y SQLi
 
 - [Manual de uso editable](docs/Manual_Uso_e_Instalacion_Completo.pptx).
 - [Manual de uso en PDF](docs/Manual_Uso_e_Instalacion_Completo.pdf).
-- Usuarios de demostración y credenciales: `imagenes-manual/credenciales-usuarios.md`, disponible únicamente en la copia local y excluido de Git.
+- Las credenciales de demostración son datos locales y no deben publicarse ni reutilizarse en instalaciones reales. Genera cuentas de prueba únicas al preparar cada entrega.
 
-El manual es la documentación de uso vigente. La carpeta `imagenes-manual` conserva únicamente el archivo de credenciales; las imágenes del manual están incrustadas en el PowerPoint.
+El manual es la documentación de uso vigente. Las imágenes del manual están incrustadas en el PowerPoint. Las carpetas locales `imagenes-manual/` y `credenciales-manual/` están excluidas de Git.
+
+> **Aviso de seguridad:** una versión anterior del repositorio contenía un documento de credenciales de demostración. Aunque se retire de la rama actual, puede persistir en el historial Git. Si alguna cuenta o contraseña fue reutilizada en una instalación accesible, revoca sus sesiones y cámbiala antes de distribuir o desplegar el proyecto.
 
 ## Ejecutar el paquete con los datos actuales
 
